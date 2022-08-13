@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-janitor",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Performs various maintenance tasks on the Obsidian vault",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
