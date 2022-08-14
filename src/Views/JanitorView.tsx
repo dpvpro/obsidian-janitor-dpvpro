@@ -9,6 +9,9 @@ export interface SelectableItem {
 export interface JanitorViewProps {
 	scanning: boolean,
 	orphans: SelectableItem[],
+	empty: SelectableItem[],
+	big: SelectableItem[],
+	expired: SelectableItem[],
 	onClose: ()=>void,
 	onSelectionChange: (i:number,section:string)=>void,
 	onPerform(operation:string):void,
@@ -23,7 +26,11 @@ export const JanitorView = (props: JanitorViewProps) => {
 	// 	orphans: 0
 	// });
 	const { scanning, onClose, onPerform, useSystemTrash, onSettingChange } = props;
-	const somethingSelected = props.orphans.some(item=>item.selected);
+	const somethingSelected = [props.orphans, props.empty, props.expired, props.big]
+	.some(files => files.some(item=>item.selected))
+	
+
+
 	const handlePerform = useCallback((operation:string)=>useCallback(()=>{
 		onPerform(operation);
 	},[operation,onPerform]),[onPerform]);
@@ -32,7 +39,8 @@ export const JanitorView = (props: JanitorViewProps) => {
 
 	const handleTrashChange = useCallback(()=>{
 		onSettingChange("useSystemTrash", !useSystemTrash);
-	},[onSettingChange,useSystemTrash])
+	},[onSettingChange,useSystemTrash]);
+
 	return (
 		<div className="janitor-modal-wrapper">
 			<div className="janitor-modal-content">
@@ -52,23 +60,39 @@ export const JanitorView = (props: JanitorViewProps) => {
 		</div>
 	)
 };
-function ScanResults({ orphans, onSelectionChange }: { orphans: SelectableItem[], onSelectionChange:(i:number,section:string)=>void }) {
+function ScanResults({ orphans,empty,big,expired, onSelectionChange }: 
+	{ orphans: SelectableItem[], 
+		empty: SelectableItem[],
+		big: SelectableItem[],
+		expired: SelectableItem[],
+		onSelectionChange:(i:number,section:string)=>void }) {
 	
-	const onOrphansSelectionChange = useCallback((i:number)=>{
-		onSelectionChange(i,"orphans");
-	},[onSelectionChange]);
+	const handleSelectionChange =
+		useCallback((section:string)=>
+			useCallback((i:number)=>{
+				onSelectionChange(i,section);
+			},[onSelectionChange,section])	
+		,[onSelectionChange ])
+
+	;
 
 
 	return (
 		<div className="janitor-scan-results">
-			<div className="janitor-scan-section-title">Found {orphans.length} orphans</div>
-			<FileList files={orphans} onChange={onOrphansSelectionChange} />
+			<FileList files={orphans} onChange={handleSelectionChange("orphans")} title="Orphans" />
+			<FileList title="Empty" files={empty} onChange={handleSelectionChange("empty")} />
+			<FileList title="Expired" files={expired} onChange={handleSelectionChange("expired")} />
+			<FileList title="Big" files={big} onChange={handleSelectionChange("big")} />
 		</div>
+
 	)
 
 }
 
-const FileList = ({files, onChange}:{files:SelectableItem[], onChange:(i:number)=>void}) => {
+const FileList = ({files, onChange, title}:{files:SelectableItem[], 
+	onChange:(i:number)=>void,
+	title: string}
+	) => {
 
 	const handleOnChange = useCallback((i:number)=>
 		useCallback(
@@ -78,7 +102,12 @@ const FileList = ({files, onChange}:{files:SelectableItem[], onChange:(i:number)
 		,[onChange,i])
 	,[onChange]);
 
+	const allSelected = files.every(file => file.selected);
+
 	return (<div className="janitor-files-wrapper">
+		<div className="janitor-scan-section-title">
+			<input type="checkbox" checked={allSelected} onChange={handleOnChange(-1)} />
+			{title} ({files.length} items) </div>
 		{
 			files.map((file,i)=>(
 				<div key={i} className="janitor-file">

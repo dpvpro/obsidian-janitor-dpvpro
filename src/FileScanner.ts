@@ -7,7 +7,10 @@ import customParseFormat from 'dayjs/plugin/customParseFormat'
 dayjs.extend(customParseFormat);
 export interface ScanResults {
 	scanning: boolean,
-	orphans: TFile[]
+	orphans: TFile[],
+	empty: TFile[],
+	expired: TFile[],
+	big: TFile[]
 }
 
 interface IFrontMatter {
@@ -32,7 +35,7 @@ export class FileScanner {
 	}
 
 	// TODO: consider deleted files returned by getFiles
-	async scan(){
+	async scan() {
 		console.log("Scanning Vault...");
 		const files = this.app.vault.getFiles();
 		const [notes, others] = partition(files,this.isNote);
@@ -51,7 +54,7 @@ export class FileScanner {
 			expired,
 			big,
 			scanning: false
-		};
+		} as ScanResults;
 		console.log("Results: ");
 		console.log(results);
 

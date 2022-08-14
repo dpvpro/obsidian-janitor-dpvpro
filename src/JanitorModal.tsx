@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { JanitorView, JanitorViewProps, SelectableItem } from './Views/JanitorView';
-import { App, Modal, Notice } from "obsidian";
+import { App, Modal, Notice, TFile } from "obsidian";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createRoot, Root } from "react-dom/client";
@@ -25,6 +25,9 @@ export class JanitorModal extends Modal {
 			onClose: () => { this.close() },
 			scanning: true,
 			orphans: [],
+			empty: [],
+			big: [],
+			expired: [],
 			onSelectionChange: (i: number, section: string) => {
 				this.handleSelectionChange(i, section);
 			},
@@ -53,12 +56,21 @@ export class JanitorModal extends Modal {
 
 
 	handleSelectionChange(ic: number, section: string) {
+		const files = ((this.state as any)[section]) as SelectableItem[];
+		if(ic>=0){
+			this.state = {
+				...this.state,
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				[section]: toggleSelection(files, ic)
+			};
+		} else {
+			const allSelected = files.every(file => file.selected);
+			this.state = {
+				...this.state,
+				[section]: files.map(file => ({...file, selected:!allSelected}))
+			}
+		}
 
-		this.state = {
-			...this.state,
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			[section]: toggleSelection(((this.state as any)[section]) as SelectableItem[], ic)
-		};
 		this.render();
 	}
 
@@ -66,13 +78,20 @@ export class JanitorModal extends Modal {
 		this.state = {
 			...this.state,
 			scanning: results.scanning,
-			orphans: results.orphans.map(tfile => ({
-				name: tfile.path,
-				selected: false
-			}))
+			orphans: this.fileToSelectableItem(results.orphans),
+			empty: this.fileToSelectableItem(results.empty),
+			expired: this.fileToSelectableItem(results.expired),
+			big: this.fileToSelectableItem(results.big)
 		};
 
 		this.render();
+	}
+
+	private fileToSelectableItem(files: TFile[]): SelectableItem[] {
+		return files.map(tfile => ({
+			name: tfile.path,
+			selected: false
+		}));
 	}
 
 	render() {

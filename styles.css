@@ -26,9 +26,14 @@ If your plugin does not need CSS, delete this file.
 	font-weight: 600;
 }
 
-.janitor-files-wrapper {
+.janitor-scan-results {
 	overflow-y: auto;
-	max-height: 180px;
+	max-height:250px;
+}
+
+.janitor-files-wrapper {
+	/* overflow-y: auto; */
+	/* max-height: 180px; */
 	/* border: 1px solid; */
 	padding: 5px;
 }
