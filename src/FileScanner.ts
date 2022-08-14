@@ -19,7 +19,7 @@ export class FileScanner {
 
 	// TODO: consider deleted files returned by getFiles
 	async scan(){
-		console.log("TODO: actually do something!");
+		console.log("Scanning Vault...");
 		const files = app.vault.getFiles();
 		const [notes, others] = partition(files,this.isNote);
 		// console.log(notes, others);
@@ -32,20 +32,21 @@ export class FileScanner {
 
 	private findOrphans(notes: TFile[], others: TFile[]) {
 		const resolvedLinks: { [key: string]: number; } = this.getResolvedLinks();
-		console.log("Consolidated resolvedLinks:");
-		console.log(resolvedLinks);
+		// console.log("Consolidated resolvedLinks:");
+		// console.log(resolvedLinks);
+
 		// resolvedLinks contains the links outgoing from the notes
 		// they could be media, attachments or nother notes
 		// they are not the whole story, though, we need to account for
 		// files referred to in the frontMatters (annotation-target for example)
 		const frontMatters = this.getFrontMatters(notes);
-		console.log("Consolidated FrontMatters:");
-		console.log(frontMatters);
+		// console.log("Consolidated FrontMatters:");
+		// console.log(frontMatters);
 
 		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters, resolvedLinks);
 
-		console.log("Consolidated resolvedResources:");
-		console.log(resolvedResources);
+		// console.log("Consolidated resolvedResources:");
+		// console.log(resolvedResources);
 
 		// now resolvedLinksAndResolvedProps contains all resolved resources:
 		// "others" that we collected and are not here are eligible to be purged
@@ -55,7 +56,7 @@ export class FileScanner {
 
 	private getOrphans(others: TFile[], resolvedLinksAndResolvedProps: { [key: string]: number; }) {
 		return others.filter(file => {
-			console.log(`resolvedLinksAndResolvedProps[${file.path}]`, resolvedLinksAndResolvedProps[file.path]);
+			// console.log(`resolvedLinksAndResolvedProps[${file.path}]`, resolvedLinksAndResolvedProps[file.path]);
 			return !resolvedLinksAndResolvedProps[file.path];
 		});
 	}

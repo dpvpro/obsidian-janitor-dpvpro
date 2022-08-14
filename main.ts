@@ -1,3 +1,4 @@
+import { JanitorModal } from './src/JanitorModal';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
 import { FileScanner } from 'src/FileScanner';
@@ -17,7 +18,7 @@ export default class JanitorPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Scan Files', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			// new Notice('This is a notice!');
-			this.cleanFiles();
+			this.scanFiles();
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('janitor-ribbon-class');
@@ -31,7 +32,7 @@ export default class JanitorPlugin extends Plugin {
 			id: 'janitor-scan-files',
 			name: 'Scan Files',
 			callback: () => {
-				this.cleanFiles();
+				this.scanFiles();
 			}
 		});
 		
@@ -43,7 +44,8 @@ export default class JanitorPlugin extends Plugin {
 		// this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 	}
 
-	private cleanFiles() {
+	private scanFiles() {
+		new JanitorModal(this.app).open();
 		new FileScanner(this.app, this.settings).scan();
 	}
 
@@ -60,20 +62,5 @@ export default class JanitorPlugin extends Plugin {
 	}
 }
 
-// class SampleModal extends Modal {
-// 	constructor(app: App) {
-// 		super(app);
-// 	}
-
-// 	onOpen() {
-// 		const {contentEl} = this;
-// 		contentEl.setText('Woah!');
-// 	}
-
-// 	onClose() {
-// 		const {contentEl} = this;
-// 		contentEl.empty();
-// 	}
-// }
 
 
