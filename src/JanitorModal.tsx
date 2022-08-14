@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { JanitorView, JanitorViewProps, SelectableItem } from './Views/JanitorView';
-import { App, Modal } from "obsidian";
+import { App, Modal, Notice } from "obsidian";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createRoot, Root } from "react-dom/client";
 import { ScanResults } from './FileScanner';
-import { FileProcessor } from './FileProcessoe';
+import { FileProcessor } from './FileProcessor';
 import JanitorPlugin from 'main';
 import { threadId } from 'worker_threads';
 
@@ -103,8 +103,12 @@ export class JanitorModal extends Modal {
 		console.log(this.state);
 		console.log("Janitor: performing " + operation);
 		const fileProcessor = new FileProcessor(this.app);
-		await fileProcessor.process(this.extractFiles(), operation, this.state.useSystemTrash);
-		this.close();
+		const processingResult = await fileProcessor.process(this.extractFiles(), operation, this.state.useSystemTrash);
+		this.close(); 
+		new Notice(`${processingResult.deletedFiles} files deleted.`
+		+ (processingResult.notDeletedFiles?
+		`${processingResult.notDeletedFiles} files not deleted`:"")
+		); 
 	}
 
 	extractFiles() {

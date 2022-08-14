@@ -2,10 +2,19 @@
 import { JanitorSettings } from './JanitorSettings';
 import { App, CachedMetadata, Editor, FrontMatterCache, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
 import { asyncFilter, partition } from './Utils';
-
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+dayjs.extend(customParseFormat);
 export interface ScanResults {
 	scanning: boolean,
 	orphans: TFile[]
+}
+
+interface IFrontMatter {
+    frontMatter: FrontMatterCache;
+    stringProps: string[];
+    resolvedProps: string[];
+    file: TFile;
 }
 
 export class FileScanner {
@@ -26,16 +35,50 @@ export class FileScanner {
 	async scan(){
 		console.log("Scanning Vault...");
 		const files = this.app.vault.getFiles();
+		const [notes, others] = partition(files,this.isNote);
+		const frontMatters = this.getFrontMatters(notes);
 		// console.log(notes, others);
 
 		// const resolvedLinks = notes.reduce((acc:TFile,))
-		const orphans = this.findOrphans(files);
-		console.log("Orphans: ");
-		console.log(orphans);
-		await this.findEmpty(files);
-		return {orphans, scanning:false};
+		const orphans = this.settings.processOrphans && this.findOrphans(notes,others,frontMatters);
+		const empty = this.settings.processEmpty && await this.findEmpty(files);
+		const expired = this.settings.processExpired && this.findExpired(frontMatters);
+		const big = this.settings.processBig && this.findBigFiles(files);
+
+		const results = {
+			orphans,
+			empty,
+			expired,
+			big,
+			scanning: false
+		};
+		console.log("Results: ");
+		console.log(results);
+
+		return results;
 	}
 
+	private findBigFiles(files: TFile[]){
+		return files.filter(file => (file.stat.size>>10)>this.settings.sizeLimitKb);
+	}
+
+	private findExpired(frontMatters: IFrontMatter[]){
+		const now = dayjs();
+		const expired = frontMatters.filter(fm=>{
+			const expires = fm.frontMatter[this.settings.expiredAttribute] as string | undefined;
+			if(expires){
+				//https://day.js.org/docs/en/parse/string-format
+				const maybeDate = dayjs(expires, this.settings.expiredDateFormat);
+				if(maybeDate.isValid() && maybeDate.isBefore(now)){
+					return true;
+				} 
+			}
+			return false;
+		})
+		.map(fm=>fm.file)
+		;
+		return expired;
+	}
 
 	private async findEmpty(files: TFile[]){
 		const empty = await asyncFilter(files,async file => {
@@ -44,11 +87,10 @@ export class FileScanner {
 			if(!this.whiteSpaceRegExp.test(content)) return true;
 			return false;
 		}); 
-		console.log("Found the following EMpty Files:", empty);
+		return empty;
 	}
 
-	private findOrphans(files: TFile[]) {
-		const [notes, others] = partition(files,this.isNote);
+	private findOrphans(notes: TFile[], others: TFile[], frontMatters:IFrontMatter[]) {
 		const resolvedLinks: { [key: string]: number; } = this.getResolvedLinks();
 		// console.log("Consolidated resolvedLinks:");
 		// console.log(resolvedLinks);
@@ -57,11 +99,10 @@ export class FileScanner {
 		// they could be media, attachments or nother notes
 		// they are not the whole story, though, we need to account for
 		// files referred to in the frontMatters (annotation-target for example)
-		const frontMatters = this.getFrontMatters(notes);
 		// console.log("Consolidated FrontMatters:");
 		// console.log(frontMatters);
 
-		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters, resolvedLinks);
+		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters, resolvedLinks) ;
 
 		// console.log("Consolidated resolvedResources:");
 		// console.log(resolvedResources);
@@ -115,7 +156,7 @@ export class FileScanner {
 					};
 				}
 			}
-		}).filter(fm => !!fm);
+		}).filter(fm => !!fm) as IFrontMatter[];
 	}
 
 	private getResolvedLinks() {
