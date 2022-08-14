@@ -10,7 +10,8 @@ export interface JanitorViewProps {
 	scanning: boolean,
 	orphans: SelectableItem[],
 	onClose: ()=>void,
-	onOrphansSelectionChange: (i:number)=>void
+	onSelectionChange: (i:number,section:string)=>void,
+	onPerform(operation:string):void
 }
 
 export const JanitorView = (props: JanitorViewProps) => {
@@ -19,7 +20,13 @@ export const JanitorView = (props: JanitorViewProps) => {
 	// 	scanning: true,
 	// 	orphans: 0
 	// });
-	const { scanning, onClose } = props;
+	const { scanning, onClose, onPerform } = props;
+	const somethingSelected = props.orphans.some(item=>item.selected);
+	const handlePerform = useCallback((operation:string)=>useCallback(()=>{
+		onPerform(operation);
+	},[operation,onPerform]),[onPerform]);
+	const handleTrash = handlePerform("trash");
+	const handleDelete = handlePerform("delete");
 
 	return (
 		<div className="janitor-modal-wrapper">
@@ -27,12 +34,21 @@ export const JanitorView = (props: JanitorViewProps) => {
 				{scanning ? <h4>Scanning...</h4> : <ScanResults {...props} />}
 			</div>
 			<div className="janitor-modal-footer">
+				
+				{somethingSelected && <button className="" onClick={handleTrash}>Trash</button>}
+				{somethingSelected && <button className="" onClick={handleDelete}>Delete</button>}
 				<button className="mod-cta" onClick={onClose}>Close</button>
 			</div>
 		</div>
 	)
 };
-function ScanResults({ orphans, onOrphansSelectionChange }: { orphans: SelectableItem[], onOrphansSelectionChange:(i:number)=>void }) {
+function ScanResults({ orphans, onSelectionChange }: { orphans: SelectableItem[], onSelectionChange:(i:number,section:string)=>void }) {
+	
+	const onOrphansSelectionChange = useCallback((i:number)=>{
+		onSelectionChange(i,"orphans");
+	},[onSelectionChange]);
+
+
 	return (
 		<div className="janitor-scan-results">
 			<div className="janitor-scan-section-title">Found {orphans.length} orphans</div>
@@ -49,8 +65,8 @@ const FileList = ({files, onChange}:{files:SelectableItem[], onChange:(i:number)
 			()=>{
 				onChange(i);
 			}
-		,[files,i])
-	,[files]);
+		,[onChange,i])
+	,[onChange]);
 
 	return (<div className="janitor-files-wrapper">
 		{

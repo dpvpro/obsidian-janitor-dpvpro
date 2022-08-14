@@ -1,12 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { JanitorView, JanitorViewProps } from './Views/JanitorView';
+import { JanitorView, JanitorViewProps, SelectableItem } from './Views/JanitorView';
 import { App, Modal } from "obsidian";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createRoot, Root } from "react-dom/client";
 import { ScanResults } from './FileScanner';
+import { FileProcessor } from './FileProcessoe';
 
+function toggleSelection(list: SelectableItem[], ic:number){
+	return list.map((o,i)=>i===ic?({...o,selected:!o.selected}):o)
+}
 export class JanitorModal extends Modal {
+
 	constructor(app: App) {
 		super(app);
 		
@@ -17,14 +22,22 @@ export class JanitorModal extends Modal {
 		onClose: ()=>{this.close()},
 		scanning: true,
 		orphans: [],
-		onOrphansSelectionChange: (ic:number)=>{
-			this.state = {
-				...this.state,
-				orphans: this.state.orphans.map((o,i)=>i===ic?({...o,selected:!o.selected}):o)
-			};
-			this.render(this.state);
+		onSelectionChange: (i:number,section:string)=>{
+			this.handleSelectionChange(i,section);
+		},
+		onPerform: (operation:string)=>{
+			this.perform(operation);
 		}
 	};
+
+	handleSelectionChange(ic:number, section:string){
+
+			this.state = {
+				...this.state,
+				[section]: toggleSelection(((this.state as any)[section]) as SelectableItem[],ic)
+			};
+			this.render(this.state);
+	}
 
 	public updateState(results: ScanResults){
 		this.state=  {...this.state,
@@ -56,14 +69,24 @@ export class JanitorModal extends Modal {
 	}
 
 	onClose() {
-		console.log(this.state);
 		const { contentEl } = this;
 		// contentEl.empty();
 		// ReactDOM.unmountComponentAtNode(contentEl);
 		this.root.unmount();
 	}
 
-	// close() {
-	// 	this.close()
-	// }
+	async perform(operation: string) {
+		console.log(this.state);
+		console.log("Janitor: performing "+operation);
+		const fileProcessor = new FileProcessor(this.app);
+		await fileProcessor.process(this.extractFiles(), operation);
+		this.close();
+	}
+
+	extractFiles() {
+		return this.state.orphans
+		.filter(f=>f.selected)
+		.map(f=>f.name)
+		;
+	}
 }
