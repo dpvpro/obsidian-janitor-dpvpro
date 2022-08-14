@@ -6,55 +6,79 @@ import * as ReactDOM from "react-dom";
 import { createRoot, Root } from "react-dom/client";
 import { ScanResults } from './FileScanner';
 import { FileProcessor } from './FileProcessoe';
+import JanitorPlugin from 'main';
+import { threadId } from 'worker_threads';
 
-function toggleSelection(list: SelectableItem[], ic:number){
-	return list.map((o,i)=>i===ic?({...o,selected:!o.selected}):o)
+function toggleSelection(list: SelectableItem[], ic: number) {
+	return list.map((o, i) => i === ic ? ({ ...o, selected: !o.selected }) : o)
 }
 export class JanitorModal extends Modal {
 
-	constructor(app: App) {
-		super(app);
-		
-	}
-
+	plugin: JanitorPlugin;
 	root: Root;
-	state: JanitorViewProps = {
-		onClose: ()=>{this.close()},
-		scanning: true,
-		orphans: [],
-		onSelectionChange: (i:number,section:string)=>{
-			this.handleSelectionChange(i,section);
-		},
-		onPerform: (operation:string)=>{
-			this.perform(operation);
+	state: JanitorViewProps;
+
+	constructor(app: App, plugin: JanitorPlugin) {
+		super(app);
+		this.plugin = plugin;
+		this.state = {
+			onClose: () => { this.close() },
+			scanning: true,
+			orphans: [],
+			onSelectionChange: (i: number, section: string) => {
+				this.handleSelectionChange(i, section);
+			},
+			onPerform: (operation: string) => {
+				this.perform(operation);
+			},
+			useSystemTrash: this.plugin.settings.useSystemTrash,
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			onSettingChange: (setting:string, value:any) => {
+				this.onSettingChange(setting, value);
+			}
+		};
+	}
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	onSettingChange(setting: string, value: any) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		(this.plugin.settings as any)[setting] = value;
+		this.plugin.saveSettings();
+		this.state = {...this.state,
+			useSystemTrash: this.plugin.settings.useSystemTrash
 		}
-	};
-
-	handleSelectionChange(ic:number, section:string){
-
-			this.state = {
-				...this.state,
-				[section]: toggleSelection(((this.state as any)[section]) as SelectableItem[],ic)
-			};
-			this.render(this.state);
+		// console.log(this.state);
+		this.render(); 
 	}
 
-	public updateState(results: ScanResults){
-		this.state=  {...this.state,
+
+
+	handleSelectionChange(ic: number, section: string) {
+
+		this.state = {
+			...this.state,
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			[section]: toggleSelection(((this.state as any)[section]) as SelectableItem[], ic)
+		};
+		this.render();
+	}
+
+	public updateState(results: ScanResults) {
+		this.state = {
+			...this.state,
 			scanning: results.scanning,
-			orphans: results.orphans.map(tfile =>  ({
+			orphans: results.orphans.map(tfile => ({
 				name: tfile.path,
 				selected: false
 			}))
 		};
 
-		this.render(this.state);
+		this.render();
 	}
 
-	render(state: JanitorViewProps){
+	render() {
 		this.root.render(
 			<React.StrictMode>
-				<JanitorView {...state} />
+				<JanitorView {...this.state} />
 			</React.StrictMode>
 		);
 	}
@@ -64,8 +88,8 @@ export class JanitorModal extends Modal {
 		// contentEl.setText('Woah!');
 		// this.titleEl.setText("Obsidian Janitor")	
 		this.root = createRoot(contentEl/*.children[1]*/);
-		this.render(this.state);
-		
+		this.render();
+
 	}
 
 	onClose() {
@@ -77,16 +101,16 @@ export class JanitorModal extends Modal {
 
 	async perform(operation: string) {
 		console.log(this.state);
-		console.log("Janitor: performing "+operation);
+		console.log("Janitor: performing " + operation);
 		const fileProcessor = new FileProcessor(this.app);
-		await fileProcessor.process(this.extractFiles(), operation);
+		await fileProcessor.process(this.extractFiles(), operation, this.state.useSystemTrash);
 		this.close();
 	}
 
 	extractFiles() {
 		return this.state.orphans
-		.filter(f=>f.selected)
-		.map(f=>f.name)
-		;
+			.filter(f => f.selected)
+			.map(f => f.name)
+			;
 	}
 }

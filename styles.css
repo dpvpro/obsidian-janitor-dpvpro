@@ -7,10 +7,20 @@ If your plugin does not need CSS, delete this file.
 
 */
 .janitor-modal-footer {
-    float: right;
+    /* float: right; */
 	padding: 10pt;
+	display: flex;
+
+
 }
 
+.janitor-modal-footer button {
+}
+.janitor-modal-footerc .janitor-footer-buttons {
+	flex: 1;
+    justify-content: flex-end;
+    display: flex;
+}
 .janitor-scan-section-title {
     font-size: larger;
     margin-bottom: 5pt;

@@ -46,7 +46,7 @@ export default class JanitorPlugin extends Plugin {
 	}
 
 	private async scanFiles() {
-		const modal = new JanitorModal(this.app);
+		const modal = new JanitorModal(this.app, this);
 		modal.open();
 		const {orphans} = await new FileScanner(this.app, this.settings).scan();
 		await delay(1000);

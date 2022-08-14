@@ -11,7 +11,9 @@ export interface JanitorViewProps {
 	orphans: SelectableItem[],
 	onClose: ()=>void,
 	onSelectionChange: (i:number,section:string)=>void,
-	onPerform(operation:string):void
+	onPerform(operation:string):void,
+	useSystemTrash: boolean,
+	onSettingChange:(setting:string, value:any)=>void
 }
 
 export const JanitorView = (props: JanitorViewProps) => {
@@ -20,7 +22,7 @@ export const JanitorView = (props: JanitorViewProps) => {
 	// 	scanning: true,
 	// 	orphans: 0
 	// });
-	const { scanning, onClose, onPerform } = props;
+	const { scanning, onClose, onPerform, useSystemTrash, onSettingChange } = props;
 	const somethingSelected = props.orphans.some(item=>item.selected);
 	const handlePerform = useCallback((operation:string)=>useCallback(()=>{
 		onPerform(operation);
@@ -28,16 +30,24 @@ export const JanitorView = (props: JanitorViewProps) => {
 	const handleTrash = handlePerform("trash");
 	const handleDelete = handlePerform("delete");
 
+	const handleTrashChange = useCallback(()=>{
+		onSettingChange("useSystemTrash", !useSystemTrash);
+	},[onSettingChange,useSystemTrash])
 	return (
 		<div className="janitor-modal-wrapper">
 			<div className="janitor-modal-content">
 				{scanning ? <h4>Scanning...</h4> : <ScanResults {...props} />}
 			</div>
 			<div className="janitor-modal-footer">
-				
-				{somethingSelected && <button className="" onClick={handleTrash}>Trash</button>}
-				{somethingSelected && <button className="" onClick={handleDelete}>Delete</button>}
-				<button className="mod-cta" onClick={onClose}>Close</button>
+				<div className="janitor-footer-settings">
+					<span>Use System Trash</span>
+					<input type="checkbox" checked={useSystemTrash} onChange={handleTrashChange} />
+				</div>
+				<div className="janitor-footer-buttons">
+					{somethingSelected && <button className="" onClick={handleTrash}>Trash</button>}
+					{somethingSelected && <button className="" onClick={handleDelete}>Delete</button>}
+					<button className="mod-cta" onClick={onClose}>Close</button>
+				</div>	
 			</div>
 		</div>
 	)
@@ -73,6 +83,7 @@ const FileList = ({files, onChange}:{files:SelectableItem[], onChange:(i:number)
 			files.map((file,i)=>(
 				<div key={i} className="janitor-file">
 					<input 
+						checked={file.selected}
 						value={file.name} 
 						onChange={handleOnChange(i)}
 						type="checkbox" />
