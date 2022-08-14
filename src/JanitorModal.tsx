@@ -4,6 +4,7 @@ import { App, Modal } from "obsidian";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createRoot, Root } from "react-dom/client";
+import { ScanResults } from './FileScanner';
 
 export class JanitorModal extends Modal {
 	constructor(app: App) {
@@ -12,14 +13,29 @@ export class JanitorModal extends Modal {
 	}
 
 	root: Root;
-	state: any;
+	state: JanitorViewProps = {
+		onClose: ()=>{this.close()},
+		scanning: true,
+		orphans: [],
+		onOrphansSelectionChange: (ic:number)=>{
+			this.state = {
+				...this.state,
+				orphans: this.state.orphans.map((o,i)=>i===ic?({...o,selected:!o.selected}):o)
+			};
+			this.render(this.state);
+		}
+	};
 
-	public updateState({scanning, orphans}: any){
-		const props = {
-			scanning: scanning,
-			orphans: orphans
+	public updateState(results: ScanResults){
+		this.state=  {...this.state,
+			scanning: results.scanning,
+			orphans: results.orphans.map(tfile =>  ({
+				name: tfile.path,
+				selected: false
+			}))
 		};
-		this.render(props);
+
+		this.render(this.state);
 	}
 
 	render(state: JanitorViewProps){
@@ -33,15 +49,21 @@ export class JanitorModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 		// contentEl.setText('Woah!');
-		
+		// this.titleEl.setText("Obsidian Janitor")	
 		this.root = createRoot(contentEl/*.children[1]*/);
+		this.render(this.state);
 		
 	}
 
 	onClose() {
+		console.log(this.state);
 		const { contentEl } = this;
 		// contentEl.empty();
 		// ReactDOM.unmountComponentAtNode(contentEl);
 		this.root.unmount();
 	}
+
+	// close() {
+	// 	this.close()
+	// }
 }

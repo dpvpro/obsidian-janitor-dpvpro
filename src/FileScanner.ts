@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { JanitorSettings } from './JanitorSettings';
 import { App, CachedMetadata, Editor, FrontMatterCache, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
+import { partition } from './Utils';
 
-function partition<T>(array: T[], isValid: (el: T) => boolean) :T[][] {
-	return array.reduce(([pass, fail]: any, elem: any) => {
-		return isValid(elem) ? [[...pass, elem], fail] : [pass, [...fail, elem]];
-	}, [[], []]);
+export interface ScanResults {
+	scanning: boolean,
+	orphans: TFile[]
 }
 
 export class FileScanner {
@@ -28,7 +28,7 @@ export class FileScanner {
 		const orphans = this.findOrphans(notes, others);
 		console.log("Orphans: ");
 		console.log(orphans);
-		return {orphans};
+		return {orphans, scanning:false};
 	}
 
 	private findOrphans(notes: TFile[], others: TFile[]) {

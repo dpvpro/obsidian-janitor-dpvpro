@@ -4,6 +4,7 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
 import { FileScanner } from 'src/FileScanner';
 import { DEFAULT_SETTINGS, JanitorSettings } from 'src/JanitorSettings';
 import JanitorSettingsTab from 'src/PluginSettingsTab';
+import { delay } from 'src/Utils';
 
 // Remember to rename these classes and interfaces!
 
@@ -48,7 +49,8 @@ export default class JanitorPlugin extends Plugin {
 		const modal = new JanitorModal(this.app);
 		modal.open();
 		const {orphans} = await new FileScanner(this.app, this.settings).scan();
-		modal.updateState({scanning: false, orphans: orphans.length});
+		await delay(1000);
+		modal.updateState({scanning: false, orphans: orphans});
 	}
 
 	onunload() {
@@ -63,6 +65,7 @@ export default class JanitorPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 }
+
 
 
 

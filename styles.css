@@ -6,3 +6,20 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+.janitor-modal-footer {
+    float: right;
+	padding: 10pt;
+}
+
+.janitor-scan-section-title {
+    font-size: larger;
+    margin-bottom: 5pt;
+    font-weight: 600;
+}
+
+.janitor-files-wrapper {
+    overflow-y: auto;
+    max-height: 180px;
+    /* border: 1px solid; */
+	padding: 5px;
+}
