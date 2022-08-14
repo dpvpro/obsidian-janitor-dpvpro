@@ -44,9 +44,11 @@ export default class JanitorPlugin extends Plugin {
 		// this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 	}
 
-	private scanFiles() {
-		new JanitorModal(this.app).open();
-		new FileScanner(this.app, this.settings).scan();
+	private async scanFiles() {
+		const modal = new JanitorModal(this.app);
+		modal.open();
+		const {orphans} = await new FileScanner(this.app, this.settings).scan();
+		modal.updateState({scanning: false, orphans: orphans.length});
 	}
 
 	onunload() {

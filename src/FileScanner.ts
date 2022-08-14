@@ -28,6 +28,7 @@ export class FileScanner {
 		const orphans = this.findOrphans(notes, others);
 		console.log("Orphans: ");
 		console.log(orphans);
+		return {orphans};
 	}
 
 	private findOrphans(notes: TFile[], others: TFile[]) {
@@ -101,10 +102,10 @@ export class FileScanner {
 	}
 
 	private getResolvedLinks() {
-		console.log("MetadataCache:");
-		console.log(app.metadataCache);
-		console.log("resolvedLinks:");
-		console.log(app.metadataCache.resolvedLinks);
+		// console.log("MetadataCache:");
+		// console.log(app.metadataCache);
+		// console.log("resolvedLinks:");
+		// console.log(app.metadataCache.resolvedLinks);
 		const resolvedLinks: { [key: string]: number; } = Object.keys(app.metadataCache.resolvedLinks).
 			reduce((rl: { [key: string]: number; }, fileName: string) => {
 				return Object.assign(rl, app.metadataCache.resolvedLinks[fileName]);
