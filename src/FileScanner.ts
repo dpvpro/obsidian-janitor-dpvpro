@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { JanitorSettings } from './JanitorSettings';
 import { App, CachedMetadata, Editor, FrontMatterCache, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
-import { partition } from './Utils';
+import { asyncFilter, partition } from './Utils';
 
 export interface ScanResults {
 	scanning: boolean,
@@ -9,8 +9,13 @@ export interface ScanResults {
 }
 
 export class FileScanner {
+	app: App;
+	settings: JanitorSettings;
+	// \S is \s negated
+	whiteSpaceRegExp = new RegExp('\\S', '');
 	constructor(app: App, settings: JanitorSettings) {
-		
+		this.app = app;
+		this.settings = settings;
 	}
 
 	isNote(file: TFile): boolean {
@@ -20,18 +25,30 @@ export class FileScanner {
 	// TODO: consider deleted files returned by getFiles
 	async scan(){
 		console.log("Scanning Vault...");
-		const files = app.vault.getFiles();
-		const [notes, others] = partition(files,this.isNote);
+		const files = this.app.vault.getFiles();
 		// console.log(notes, others);
 
 		// const resolvedLinks = notes.reduce((acc:TFile,))
-		const orphans = this.findOrphans(notes, others);
+		const orphans = this.findOrphans(files);
 		console.log("Orphans: ");
 		console.log(orphans);
+		await this.findEmpty(files);
 		return {orphans, scanning:false};
 	}
 
-	private findOrphans(notes: TFile[], others: TFile[]) {
+
+	private async findEmpty(files: TFile[]){
+		const empty = await asyncFilter(files,async file => {
+			if(file.stat.size === 0) return true;
+			const content = await this.app.vault.cachedRead(file);
+			if(!this.whiteSpaceRegExp.test(content)) return true;
+			return false;
+		}); 
+		console.log("Found the following EMpty Files:", empty);
+	}
+
+	private findOrphans(files: TFile[]) {
+		const [notes, others] = partition(files,this.isNote);
 		const resolvedLinks: { [key: string]: number; } = this.getResolvedLinks();
 		// console.log("Consolidated resolvedLinks:");
 		// console.log(resolvedLinks);

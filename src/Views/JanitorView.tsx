@@ -40,8 +40,8 @@ export const JanitorView = (props: JanitorViewProps) => {
 			</div>
 			<div className="janitor-modal-footer">
 				<div className="janitor-footer-settings">
-					<span>Use System Trash</span>
-					<input type="checkbox" checked={useSystemTrash} onChange={handleTrashChange} />
+					<label htmlFor="useSystemTrash">Use System Trash</label>
+					<input name="useSystemTrash" id="useSystemTrash" type="checkbox" checked={useSystemTrash} onChange={handleTrashChange} />
 				</div>
 				<div className="janitor-footer-buttons">
 					{somethingSelected && <button className="" onClick={handleTrash}>Trash</button>}

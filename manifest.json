@@ -1,6 +1,6 @@
 {
 	"id": "obsidian-janitor",
-	"name": "Obsidian Janitor",
+	"name": "Janitor",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Performs various maintenance tasks on the Obsidian vault",

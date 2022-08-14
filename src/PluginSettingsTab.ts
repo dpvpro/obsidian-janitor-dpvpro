@@ -18,15 +18,23 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 		containerEl.createEl('h2', {text: 'Janitor Settings'});
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+			.setName('Run at Startup')
+			.setDesc('Is enabled the plugin will perform a scan automatically everytime you open a vault.')
+			// .addText(text => text
+			// 	.setPlaceholder('Enter your secret')
+			// 	.setValue(this.plugin.settings.mySetting)
+			// 	.onChange(async (value) => {
+			// 		console.log('Secret: ' + value);
+			// 		this.plugin.settings.mySetting = value;
+			// 		await this.plugin.saveSettings();
+			// 	}));
+			.addToggle(bool => bool
+				.setValue(this.plugin.settings.runAtStartup)
 				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
+					console.log('changing runAtStartup: ', value);
+					this.plugin.settings.runAtStartup = value;
 					await this.plugin.saveSettings();
-				}));
+				})
+				)
 	}
 }

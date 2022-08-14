@@ -1,13 +1,13 @@
 
 export interface JanitorSettings {
 
-	mySetting: string;
+	runAtStartup: boolean;
 	attachmentsExtensions: string;
 	useSystemTrash: boolean;
 }
 
 export const DEFAULT_SETTINGS: JanitorSettings = {
-	mySetting: 'default',
+	runAtStartup: false,
 	attachmentsExtensions: ".jpg|.jpeg|.png|.gif|.svg|.pdf",
 	useSystemTrash: false
 }
