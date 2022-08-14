@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
-import { FileCleaner } from 'src/FileCleaner';
+import { FileScanner } from 'src/FileScanner';
 import { DEFAULT_SETTINGS, JanitorSettings } from 'src/JanitorSettings';
 import JanitorSettingsTab from 'src/PluginSettingsTab';
 
@@ -14,7 +14,7 @@ export default class JanitorPlugin extends Plugin {
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Cleanup Files', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('dice', 'Scan Files', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			// new Notice('This is a notice!');
 			this.cleanFiles();
@@ -28,8 +28,8 @@ export default class JanitorPlugin extends Plugin {
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
-			id: 'janitor-clean-files',
-			name: 'Clean Files',
+			id: 'janitor-scan-files',
+			name: 'Scan Files',
 			callback: () => {
 				this.cleanFiles();
 			}
@@ -44,7 +44,7 @@ export default class JanitorPlugin extends Plugin {
 	}
 
 	private cleanFiles() {
-		new FileCleaner(this.app, this.settings).scan();
+		new FileScanner(this.app, this.settings).scan();
 	}
 
 	onunload() {
