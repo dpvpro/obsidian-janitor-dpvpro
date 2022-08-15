@@ -53,6 +53,23 @@ export default class JanitorPlugin extends Plugin {
 			}
 		});
 
+		this.addCommand({
+			id: 'janitor-set-expiration',
+			name: 'Sets the expiration date of the current note',
+			checkCallback: (checking: boolean) => {
+				// console.log(editor.getSelection());
+				
+				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if(markdownView){
+					if (!checking) {
+						this.setExirationDate(markdownView);
+					}	
+					return true;
+				}
+				return false;
+			}
+		});
+
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new JanitorSettingsTab(this.app, this));
 
@@ -64,6 +81,26 @@ export default class JanitorPlugin extends Plugin {
 			this.scanFiles();
 		}
 	}
+
+	frontMatterRegEx = /^---$(.*)^---/sm
+
+	async setExirationDate(view: MarkdownView) {
+
+		const content = await this.app.vault.cachedRead(view.file);
+		console.log(content);
+		const m = this.frontMatterRegEx.exec(content);
+		console.log(m);
+		if(m){// we have a frontmatter
+			const yaml = m[1];
+			console.log("yaml:", yaml);
+			if(yaml && yaml.length){
+				const expiresRegExp = new RegExp(this.settings.expiredAttribute+":(.*)");
+				const expdate = expiresRegExp.exec(yaml);
+				console.log("expires: ", expdate);
+			}
+		} 
+	}
+
 
 	private updateStatusBar(message: string){
 		this.statusBarItemEl.setText(message);
@@ -102,6 +139,7 @@ export default class JanitorPlugin extends Plugin {
 			this.perform(this.settings.defaultOperation, files)
 		}
 	}
+
 
 	async perform(operation: OperationType, files: string[]) {
 		// console.log(this.state);
