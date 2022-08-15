@@ -19,7 +19,7 @@ export default class JanitorPlugin extends Plugin {
 		await this.loadSettings();
 
 		if (this.settings.addRibbonIcon) {
-			const ribbonIconEl = this.addRibbonIcon('broken-link', 'Janitor: scan vault', (evt: MouseEvent) => {
+			const ribbonIconEl = this.addRibbonIcon('trash', 'Janitor: scan vault', (evt: MouseEvent) => {
 				this.scanFiles();
 			});
 			// Perform additional things with the ribbon
