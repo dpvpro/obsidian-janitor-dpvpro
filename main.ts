@@ -38,6 +38,20 @@ export default class JanitorPlugin extends Plugin {
 				this.scanFiles();
 			}
 		});
+		this.addCommand({
+			id: 'janitor-scan-files-noprompt',
+			name: 'Scan Files (without prompt)',
+			callback: () => {
+				this.scanFiles(false,true);
+			}
+		});
+		this.addCommand({
+			id: 'janitor-scan-files-with-prompt',
+			name: 'Scan Files (with prompt)',
+			callback: () => {
+				this.scanFiles(true, false);
+			}
+		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new JanitorSettingsTab(this.app, this));
@@ -55,8 +69,7 @@ export default class JanitorPlugin extends Plugin {
 		this.statusBarItemEl.setText(message);
 	}
 
-
-	private async scanFiles() {
+	private async scanFiles(forcePrompt=false, noPrompt=false) {
 		this.updateStatusBar("Janitor Scanning...");
 		let modal;
 		const results = await new FileScanner(this.app, this.settings).scan();
@@ -67,7 +80,10 @@ export default class JanitorPlugin extends Plugin {
 		// We determine if we have to prompt the user,
 		// even if user disabled prompting, we could have to prompt
 		// for big files to avoid deleting important stuff in an unattended way
-		if (this.settings.promptUser || (results.big?.length && this.settings.promptForBigFiles)) {
+		if (this.settings.promptUser && !noPrompt 
+			|| (results.big?.length && this.settings.promptForBigFiles)
+			|| forcePrompt
+			) {
 			modal = new JanitorModal(this.app, this);
 			modal.open();
 		}
