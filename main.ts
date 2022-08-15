@@ -1,7 +1,8 @@
+import { DatePickerModal } from './src/Views/DatePickerModal';
 import { OperationType } from './src/JanitorSettings';
 import { JanitorModal } from './src/JanitorModal';
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, TFile } from 'obsidian';
 import { FileScanner } from 'src/FileScanner';
 import { DEFAULT_SETTINGS, JanitorSettings } from 'src/JanitorSettings';
 import JanitorSettingsTab from 'src/PluginSettingsTab';
@@ -62,7 +63,7 @@ export default class JanitorPlugin extends Plugin {
 				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if(markdownView){
 					if (!checking) {
-						this.setExirationDate(markdownView);
+						this.chooseDate(markdownView);
 					}	
 					return true;
 				}
@@ -84,23 +85,55 @@ export default class JanitorPlugin extends Plugin {
 
 	frontMatterRegEx = /^---$(.*)^---/sm
 
-	async setExirationDate(view: MarkdownView) {
+	async chooseDate(view: MarkdownView) {
 
-		const content = await this.app.vault.cachedRead(view.file);
+		new DatePickerModal(this.app, this, view.file).open();
+
+	}
+
+	async updateNoteWithDate(file: TFile, dateToSet: string){
+		// const dateToSet="2022-09-15";
+		let content = await this.app.vault.cachedRead(file);
+		content = this.setDateIntoContent(content, dateToSet);
+		this.app.vault.modify(file, content);
+	}
+
+
+	private setDateIntoContent(content: string, dateToSet: string) {
 		console.log(content);
 		const m = this.frontMatterRegEx.exec(content);
 		console.log(m);
-		if(m){// we have a frontmatter
-			const yaml = m[1];
+		let yaml = "";
+		if (m) { // we have a frontmatter
+			yaml = m[1];
 			console.log("yaml:", yaml);
-			if(yaml && yaml.length){
-				const expiresRegExp = new RegExp(this.settings.expiredAttribute+":(.*)");
+			console.log("yaml length:", yaml.length);
+			if (yaml && yaml.length) { // we have yaml
+				const expiresRegExp = new RegExp(this.settings.expiredAttribute + ":\\s*(.*)");
 				const expdate = expiresRegExp.exec(yaml);
 				console.log("expires: ", expdate);
+				if (expdate) { // we already have an expiry date, we need to change it
+					yaml = yaml.replace(expdate[1], dateToSet);
+				} else {
+					yaml += `${this.settings.expiredAttribute}: ${dateToSet}\n`;
+				}
+				// expiresRegExp 
+			} else { // we have a frontmatter without yaml
+				console.error("we have a frontmatter without yaml? We should not land here.");
+				yaml = `${this.settings.expiredAttribute}: ${dateToSet}\n`;
 			}
-		} 
+			content = content.replace(m[1], yaml);
+		} else { // we don't have a frontmatter
+			const frontMatter = `---
+${this.settings.expiredAttribute}: ${dateToSet}
+---
+`;
+			content = frontMatter + content;
+		}
+		console.log("Modified Content:");
+		console.log(content);
+		return content;
 	}
-
 
 	private updateStatusBar(message: string){
 		this.statusBarItemEl.setText(message);
