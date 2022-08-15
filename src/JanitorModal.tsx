@@ -13,6 +13,9 @@ import { OperationType } from './JanitorSettings';
 function toggleSelection(list: SelectableItem[], ic: number) {
 	return list.map((o, i) => i === ic ? ({ ...o, selected: !o.selected }) : o)
 }
+function changeSelection(list: SelectableItem[], names:string[], value:boolean) {
+	return list.map((o, i) => names.contains( o.name) ? ({ ...o, selected: value }) : o)
+}
 export class JanitorModal extends Modal {
 
 	plugin: JanitorPlugin;
@@ -68,20 +71,36 @@ export class JanitorModal extends Modal {
 	handleSelectionChange(ic: number, section: string) {
 		const files = ((this.state as any)[section]) as SelectableItem[];
 		if (ic >= 0) {
-			this.state = {
-				...this.state,
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				[section]: toggleSelection(files, ic)
-			};
+			// single item toggle
+			const item = files[ic];
+			const newValue = !item.selected;
+			this.applySelectionChangeToAllSections([item.name], newValue);    
+			// this.state = {
+			// 	...this.state,
+			// 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			// 	[section]: toggleSelection(files, ic)
+			// };
 		} else {
 			const allSelected = files.every(file => file.selected);
-			this.state = {
-				...this.state,
-				[section]: files.map(file => ({ ...file, selected: !allSelected }))
-			}
+			const names = files.map(file=>file.name);
+			this.applySelectionChangeToAllSections(names,!allSelected);
+			// this.state = {
+			// 	...this.state,
+			// 	[section]: files.map(file => ({ ...file, selected: !allSelected }))
+			// }
 		}
 
 		this.render();
+	}
+
+	applySelectionChangeToAllSections(names:string[], value:boolean){
+		this.state = {
+			...this.state,
+			orphans: this.state.orphans && changeSelection(this.state.orphans, names, value),
+			empty:  this.state.empty && changeSelection(this.state.empty , names, value),
+			big:  this.state.big && changeSelection(this.state.big, names, value),
+			expired: this.state.expired && changeSelection(this.state.expired, names, value), 
+		}
 	}
 
 	public updateState(results: ScanResults) {

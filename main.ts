@@ -61,7 +61,7 @@ export default class JanitorPlugin extends Plugin {
 		let modal;
 		const results = await new FileScanner(this.app, this.settings).scan();
 		// artificially introduce waiting for testing purposes
-		await delay(1000);
+		// await delay(1000);
 
 		this.updateStatusBar("");
 		// We determine if we have to prompt the user,
