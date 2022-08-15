@@ -32,6 +32,14 @@ If your plugin does not need CSS, delete this file.
     margin-bottom: 10px;
 }
 
+.janitor-file {
+	margin-left: 1em;
+}
+
+.janitor-file:focus {
+	outline: auto;
+}
+
 .janitor-scan-results {
 	overflow-y: auto;
 	max-height:250px;
