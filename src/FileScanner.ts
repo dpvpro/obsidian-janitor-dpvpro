@@ -32,7 +32,6 @@ export class FileScanner {
 		return file.extension.toLowerCase() === "md";
 	}
 
-	// TODO: consider deleted files returned by getFiles
 	async scan() {
 		console.log("Scanning Vault...");
 		const files = this.app.vault.getFiles();

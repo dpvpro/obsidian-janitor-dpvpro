@@ -2,6 +2,7 @@ import { DEFAULT_SETTINGS } from 'src/JanitorSettings';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import JanitorPlugin from 'main';
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { moment } from 'obsidian';
 
 export default class JanitorSettingsTab extends PluginSettingTab {
 	plugin: JanitorPlugin;
@@ -32,6 +33,16 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			"iThe user will be able to select which files to remove",
 			"promptUser"
 		);
+
+		false && new Setting(containerEl)
+			.setName("Excluded Folders")
+			.setDesc("These Folders will be excluded ")
+			.addSearch(search => {
+				console.log(search);
+				return search;
+			}
+		);
+
 
 		new Setting(containerEl)
 			.setName('Always Prompt for big files')
