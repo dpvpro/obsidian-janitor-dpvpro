@@ -14,10 +14,10 @@ export interface ScanResults {
 }
 
 interface IFrontMatter {
-    frontMatter: FrontMatterCache;
-    stringProps: string[];
-    resolvedProps: string[];
-    file: TFile;
+	frontMatter: FrontMatterCache;
+	stringProps: string[];
+	resolvedProps: string[];
+	file: TFile;
 }
 
 export class FileScanner {
@@ -38,15 +38,15 @@ export class FileScanner {
 	async scan() {
 		console.log("Scanning Vault...");
 		const files = this.app.vault.getFiles();
-		const [notes, others] = partition(files,this.isNote);
+		const [notes, others] = partition(files, this.isNote);
 		const frontMatters = this.getFrontMatters(notes);
 		// console.log(notes, others);
 
 		// const resolvedLinks = notes.reduce((acc:TFile,))
-		const orphans = this.settings.processOrphans && this.findOrphans(notes,others,frontMatters);
-		const empty = this.settings.processEmpty && await this.findEmpty(files);
-		const expired = this.settings.processExpired && this.findExpired(frontMatters);
-		const big = this.settings.processBig && this.findBigFiles(files);
+		const orphans = this.settings.processOrphans && this.findOrphans(notes, others, frontMatters) ;
+		const empty = this.settings.processEmpty && await this.findEmpty(files) ;
+		const expired = this.settings.processExpired && this.findExpired(frontMatters) ;
+		const big = this.settings.processBig && this.findBigFiles(files) ;
 
 		const results = {
 			orphans,
@@ -61,39 +61,39 @@ export class FileScanner {
 		return results;
 	}
 
-	private findBigFiles(files: TFile[]){
-		return files.filter(file => (file.stat.size>>10)>this.settings.sizeLimitKb);
+	private findBigFiles(files: TFile[]) {
+		return files.filter(file => (file.stat.size >> 10) > this.settings.sizeLimitKb);
 	}
 
-	private findExpired(frontMatters: IFrontMatter[]){
+	private findExpired(frontMatters: IFrontMatter[]) {
 		const now = dayjs();
-		const expired = frontMatters.filter(fm=>{
+		const expired = frontMatters.filter(fm => {
 			const expires = fm.frontMatter[this.settings.expiredAttribute] as string | undefined;
-			if(expires){
+			if (expires) {
 				//https://day.js.org/docs/en/parse/string-format
 				const maybeDate = dayjs(expires, this.settings.expiredDateFormat);
-				if(maybeDate.isValid() && maybeDate.isBefore(now)){
+				if (maybeDate.isValid() && maybeDate.isBefore(now)) {
 					return true;
-				} 
+				}
 			}
 			return false;
 		})
-		.map(fm=>fm.file)
-		;
+			.map(fm => fm.file)
+			;
 		return expired;
 	}
 
-	private async findEmpty(files: TFile[]){
-		const empty = await asyncFilter(files,async file => {
-			if(file.stat.size === 0) return true;
+	private async findEmpty(files: TFile[]) {
+		const empty = await asyncFilter(files, async file => {
+			if (file.stat.size === 0) return true;
 			const content = await this.app.vault.cachedRead(file);
-			if(!this.whiteSpaceRegExp.test(content)) return true;
+			if (!this.whiteSpaceRegExp.test(content)) return true;
 			return false;
-		}); 
+		});
 		return empty;
 	}
 
-	private findOrphans(notes: TFile[], others: TFile[], frontMatters:IFrontMatter[]) {
+	private findOrphans(notes: TFile[], others: TFile[], frontMatters: IFrontMatter[]) {
 		const resolvedLinks: { [key: string]: number; } = this.getResolvedLinks();
 		// console.log("Consolidated resolvedLinks:");
 		// console.log(resolvedLinks);
@@ -105,7 +105,7 @@ export class FileScanner {
 		// console.log("Consolidated FrontMatters:");
 		// console.log(frontMatters);
 
-		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters, resolvedLinks) ;
+		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters, resolvedLinks);
 
 		// console.log("Consolidated resolvedResources:");
 		// console.log(resolvedResources);
@@ -176,7 +176,7 @@ export class FileScanner {
 	}
 }
 
-function extractStringProperties(fm: any):string[] {
+function extractStringProperties(fm: any): string[] {
 	return Object.values<string>(fm).filter(o => typeof o === 'string');
 }
 

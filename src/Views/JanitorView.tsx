@@ -8,10 +8,10 @@ export interface SelectableItem {
 }
 export interface JanitorViewProps {
 	scanning: boolean,
-	orphans: SelectableItem[],
-	empty: SelectableItem[],
-	big: SelectableItem[],
-	expired: SelectableItem[],
+	orphans: SelectableItem[] | false,
+	empty: SelectableItem[] | false,
+	big: SelectableItem[] | false,
+	expired: SelectableItem[] | false,
 	onClose: ()=>void,
 	onSelectionChange: (i:number,section:string)=>void,
 	onPerform(operation:string):void,
@@ -27,7 +27,7 @@ export const JanitorView = (props: JanitorViewProps) => {
 	// });
 	const { scanning, onClose, onPerform, useSystemTrash, onSettingChange } = props;
 	const somethingSelected = [props.orphans, props.empty, props.expired, props.big]
-	.some(files => files.some(item=>item.selected))
+	.some(files => files && files.some(item=>item.selected))
 	
 
 
@@ -61,10 +61,10 @@ export const JanitorView = (props: JanitorViewProps) => {
 	)
 };
 function ScanResults({ orphans,empty,big,expired, onSelectionChange }: 
-	{ orphans: SelectableItem[], 
-		empty: SelectableItem[],
-		big: SelectableItem[],
-		expired: SelectableItem[],
+	{ orphans: SelectableItem[] | false, 
+		empty: SelectableItem[] | false,
+		big: SelectableItem[] | false,
+		expired: SelectableItem[] | false,
 		onSelectionChange:(i:number,section:string)=>void }) {
 	
 	const handleSelectionChange =
@@ -79,10 +79,10 @@ function ScanResults({ orphans,empty,big,expired, onSelectionChange }:
 
 	return (
 		<div className="janitor-scan-results">
-			<FileList files={orphans} onChange={handleSelectionChange("orphans")} title="Orphans" />
-			<FileList title="Empty" files={empty} onChange={handleSelectionChange("empty")} />
-			<FileList title="Expired" files={expired} onChange={handleSelectionChange("expired")} />
-			<FileList title="Big" files={big} onChange={handleSelectionChange("big")} />
+			{orphans && <FileList files={orphans} onChange={handleSelectionChange("orphans")} title="Orphans" />}
+			{empty && <FileList title="Empty" files={empty} onChange={handleSelectionChange("empty")} />}
+			{expired && <FileList title="Expired" files={expired} onChange={handleSelectionChange("expired")} />}
+			{big && <FileList title="Big" files={big} onChange={handleSelectionChange("big")} />}
 		</div>
 
 	)
@@ -102,6 +102,7 @@ const FileList = ({files, onChange, title}:{files:SelectableItem[],
 		,[onChange,i])
 	,[onChange]);
 
+	
 	const allSelected = files.every(file => file.selected);
 
 	return (<div className="janitor-files-wrapper">

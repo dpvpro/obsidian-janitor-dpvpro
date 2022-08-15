@@ -2,8 +2,10 @@
 export interface JanitorSettings {
 
 	runAtStartup: boolean;
+	promptUser: boolean;
+	defaultOperation: "trash" | "trash-system" | "delete";
 	attachmentsExtensions: string;
-	useSystemTrash: boolean;
+	// useSystemTrash: boolean;
 	expiredAttribute: string;
 	expiredDateFormat: string;
 	sizeLimitKb: number;
@@ -16,8 +18,10 @@ export interface JanitorSettings {
 
 export const DEFAULT_SETTINGS: JanitorSettings = {
 	runAtStartup: false,
+	promptUser: true,
 	attachmentsExtensions: ".jpg|.jpeg|.png|.gif|.svg|.pdf",
-	useSystemTrash: false,
+	// useSystemTrash: false,
+	defaultOperation: "trash",
 	expiredAttribute: "expires",
 	expiredDateFormat: "YYYY-MM-DD",
 	sizeLimitKb: 100,

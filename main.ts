@@ -5,6 +5,7 @@ import { FileScanner } from 'src/FileScanner';
 import { DEFAULT_SETTINGS, JanitorSettings } from 'src/JanitorSettings';
 import JanitorSettingsTab from 'src/PluginSettingsTab';
 import { delay } from 'src/Utils';
+import { FileProcessor } from 'src/FileProcessor';
 
 // Remember to rename these classes and interfaces!
 
@@ -36,7 +37,7 @@ export default class JanitorPlugin extends Plugin {
 				this.scanFiles();
 			}
 		});
-		
+
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new JanitorSettingsTab(this.app, this));
 
@@ -46,11 +47,36 @@ export default class JanitorPlugin extends Plugin {
 	}
 
 	private async scanFiles() {
-		const modal = new JanitorModal(this.app, this);
-		modal.open();
+		let modal;
+		if (this.settings.promptUser) {
+			modal = new JanitorModal(this.app, this);
+			modal.open();
+		}
 		const results = await new FileScanner(this.app, this.settings).scan();
 		await delay(1000);
-		modal.updateState(results);
+		if(modal){
+			modal.updateState(results);
+		} else {
+			// we should process all available files
+			let files = [results.orphans, results.empty, results.expired, results.big]
+			.flatMap(list => list ?
+				list.map(file => file.path)
+			:[]	
+			);
+			files = [...new Set(files)];
+			this.perform(this.settings.defaultOperation,files)
+		}
+	}
+
+	async perform(operation: string, files:string[]) {
+		// console.log(this.state);
+		console.log("Janitor: performing " + operation);
+		const fileProcessor = new FileProcessor(this.app);
+		const processingResult = await fileProcessor.process(files, operation, this.settings.useSystemTrash);
+		new Notice(`${processingResult.deletedFiles} files deleted.`
+			+ (processingResult.notDeletedFiles ?
+				`${processingResult.notDeletedFiles} files not deleted` : "")
+		);
 	}
 
 	onunload() {

@@ -39,13 +39,13 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 				})
 				);
 		
-		new Setting(containerEl)
-			.setName("Default Operation")
-			.setDesc("Either permanently delete or move to the trash (system or Obsidian)")
-			.addDropdown(list => list
-				.addOption("")
+		// new Setting(containerEl)
+		// 	.setName("Default Operation")
+		// 	.setDesc("Either permanently delete or move to the trash (system or Obsidian)")
+		// 	.addDropdown(list => list
+		// 		.addOption("")
 
-			)
+		// 	)
 
 		new Setting(containerEl)
 		.setHeading();
