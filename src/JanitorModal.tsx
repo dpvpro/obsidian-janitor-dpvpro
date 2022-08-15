@@ -36,28 +36,33 @@ export class JanitorModal extends Modal {
 			},
 			useSystemTrash: this.plugin.settings.useSystemTrash,
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			onSettingChange: (setting:string, value:any) => {
+			onSettingChange: (setting: string, value: any) => {
 				this.onSettingChange(setting, value);
 			}
 		};
+	}
+	perform(operation: string) {
+		this.plugin.perform(operation, this.extractFiles());
+		this.close();
 	}
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onSettingChange(setting: string, value: any) {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(this.plugin.settings as any)[setting] = value;
 		this.plugin.saveSettings();
-		this.state = {...this.state,
+		this.state = {
+			...this.state,
 			useSystemTrash: this.plugin.settings.useSystemTrash
 		}
 		// console.log(this.state);
-		this.render(); 
+		this.render();
 	}
 
 
 
 	handleSelectionChange(ic: number, section: string) {
 		const files = ((this.state as any)[section]) as SelectableItem[];
-		if(ic>=0){
+		if (ic >= 0) {
 			this.state = {
 				...this.state,
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,7 +72,7 @@ export class JanitorModal extends Modal {
 			const allSelected = files.every(file => file.selected);
 			this.state = {
 				...this.state,
-				[section]: files.map(file => ({...file, selected:!allSelected}))
+				[section]: files.map(file => ({ ...file, selected: !allSelected }))
 			}
 		}
 
@@ -87,8 +92,8 @@ export class JanitorModal extends Modal {
 		this.render();
 	}
 
-	private fileToSelectableItem(files: TFile[]): SelectableItem[] {
-		return files.map(tfile => ({
+	private fileToSelectableItem(files: TFile[] | false): SelectableItem[]|false {
+		return files && files.map(tfile => ({
 			name: tfile.path,
 			selected: false
 		}));
@@ -118,22 +123,13 @@ export class JanitorModal extends Modal {
 		this.root.unmount();
 	}
 
-	async perform(operation: string) {
-		console.log(this.state);
-		console.log("Janitor: performing " + operation);
-		const fileProcessor = new FileProcessor(this.app);
-		const processingResult = await fileProcessor.process(this.extractFiles(), operation, this.state.useSystemTrash);
-		this.close(); 
-		new Notice(`${processingResult.deletedFiles} files deleted.`
-		+ (processingResult.notDeletedFiles?
-		`${processingResult.notDeletedFiles} files not deleted`:"")
-		); 
-	}
+
 
 	extractFiles() {
-		return this.state.orphans
-			.filter(f => f.selected)
-			.map(f => f.name)
-			;
+		return [this.state.orphans, this.state.empty, this.state.big, this.state.expired]
+			.flatMap(list =>
+				list ? list.filter(f => f.selected).map(f => f.name) : []
+			)
+
 	}
 }
