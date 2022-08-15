@@ -2,9 +2,7 @@
 import { JanitorSettings } from './JanitorSettings';
 import { App, CachedMetadata, Editor, FrontMatterCache, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
 import { asyncFilter, partition } from './Utils';
-import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat'
-dayjs.extend(customParseFormat);
+import { moment } from "obsidian";
 export interface ScanResults {
 	scanning: boolean,
 	orphans: TFile[],
@@ -66,15 +64,16 @@ export class FileScanner {
 	}
 
 	private findExpired(frontMatters: IFrontMatter[]) {
-		const now = dayjs();
+		const now = moment.now();
 		const expired = frontMatters.filter(fm => {
 			const expires = fm.frontMatter[this.settings.expiredAttribute] as string | undefined;
 			if (expires) {
 				//https://day.js.org/docs/en/parse/string-format
-				const maybeDate = dayjs(expires, this.settings.expiredDateFormat);
+				const maybeDate = moment(expires, this.settings.expiredDateFormat);
 				if (maybeDate.isValid() && maybeDate.isBefore(now)) {
 					return true;
 				}
+
 			}
 			return false;
 		})

@@ -8,6 +8,7 @@ import { ScanResults } from './FileScanner';
 import { FileProcessor } from './FileProcessor';
 import JanitorPlugin from 'main';
 import { threadId } from 'worker_threads';
+import { OperationType } from './JanitorSettings';
 
 function toggleSelection(list: SelectableItem[], ic: number) {
 	return list.map((o, i) => i === ic ? ({ ...o, selected: !o.selected }) : o)
@@ -31,20 +32,24 @@ export class JanitorModal extends Modal {
 			onSelectionChange: (i: number, section: string) => {
 				this.handleSelectionChange(i, section);
 			},
-			onPerform: (operation: string) => {
+			onPerform: (operation:OperationType) => {
 				this.perform(operation);
 			},
-			useSystemTrash: this.plugin.settings.useSystemTrash,
+			// defaultOperation: this.plugin.settings.defaultOperation,
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			onSettingChange: (setting: string, value: any) => {
 				this.onSettingChange(setting, value);
 			}
 		};
 	}
-	perform(operation: string) {
+	perform(operation:OperationType) {
 		this.plugin.perform(operation, this.extractFiles());
 		this.close();
 	}
+
+	/**
+	 * @deprecated The method should not be used
+	 */
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onSettingChange(setting: string, value: any) {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,7 +57,7 @@ export class JanitorModal extends Modal {
 		this.plugin.saveSettings();
 		this.state = {
 			...this.state,
-			useSystemTrash: this.plugin.settings.useSystemTrash
+			// useSystemTrash: this.plugin.settings.useSystemTrash
 		}
 		// console.log(this.state);
 		this.render();

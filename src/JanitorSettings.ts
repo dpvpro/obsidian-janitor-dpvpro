@@ -1,9 +1,15 @@
-
+export enum OperationType {
+	Trash = "trash",
+	TrashSystem = "trash-system",
+	Delete = "delete"
+}
 export interface JanitorSettings {
 
 	runAtStartup: boolean;
+	addRibbonIcon: boolean;
 	promptUser: boolean;
-	defaultOperation: "trash" | "trash-system" | "delete";
+	promptForBigFiles: boolean;
+	defaultOperation: OperationType;
 	attachmentsExtensions: string;
 	// useSystemTrash: boolean;
 	expiredAttribute: string;
@@ -14,14 +20,17 @@ export interface JanitorSettings {
 	processEmpty: boolean;
 	processExpired: boolean;
 	processBig: boolean;
+
 }
 
 export const DEFAULT_SETTINGS: JanitorSettings = {
 	runAtStartup: false,
+	addRibbonIcon: true,
 	promptUser: true,
+	promptForBigFiles: true,
 	attachmentsExtensions: ".jpg|.jpeg|.png|.gif|.svg|.pdf",
 	// useSystemTrash: false,
-	defaultOperation: "trash",
+	defaultOperation: OperationType.Trash,
 	expiredAttribute: "expires",
 	expiredDateFormat: "YYYY-MM-DD",
 	sizeLimitKb: 100,

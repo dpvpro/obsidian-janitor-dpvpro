@@ -26,6 +26,12 @@ If your plugin does not need CSS, delete this file.
 	font-weight: 600;
 }
 
+.janitor-modal-title {
+    text-align: center;
+    font-size: 150%;
+    margin-bottom: 10px;
+}
+
 .janitor-scan-results {
 	overflow-y: auto;
 	max-height:250px;

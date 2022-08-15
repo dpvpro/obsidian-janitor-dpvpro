@@ -1,6 +1,7 @@
 import * as React from "react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useCallback, useState } from "react";
+import { OperationType } from "src/JanitorSettings";
 
 export interface SelectableItem {
 	selected: boolean,
@@ -15,7 +16,7 @@ export interface JanitorViewProps {
 	onClose: ()=>void,
 	onSelectionChange: (i:number,section:string)=>void,
 	onPerform(operation:string):void,
-	useSystemTrash: boolean,
+	// useSystemTrash: boolean,
 	onSettingChange:(setting:string, value:any)=>void
 }
 
@@ -25,36 +26,45 @@ export const JanitorView = (props: JanitorViewProps) => {
 	// 	scanning: true,
 	// 	orphans: 0
 	// });
-	const { scanning, onClose, onPerform, useSystemTrash, onSettingChange } = props;
+	const { scanning, onClose, onPerform } = props;
 	const somethingSelected = [props.orphans, props.empty, props.expired, props.big]
 	.some(files => files && files.some(item=>item.selected))
 	
 
 
-	const handlePerform = useCallback((operation:string)=>useCallback(()=>{
+	const handlePerform = useCallback((operation:OperationType)=>useCallback(()=>{
 		onPerform(operation);
 	},[operation,onPerform]),[onPerform]);
-	const handleTrash = handlePerform("trash");
-	const handleDelete = handlePerform("delete");
+	// const handleTrash = handlePerform(OperationType.Trash);
+	// const handleTrashSystem = handlePerform(OperationType.TrashSystem);
+	// const handleDelete = handlePerform(OperationType.Delete);
+	// caches the handler for each operation type to avoid React
+	// complaining of different hooks calls depending on which
+	// buttons we are rendering
+	const handles:{[op:string]:()=>void} = Object.values(OperationType).reduce((ob, opType)=>{
+		return {...ob, [opType]: handlePerform(opType)}
+	},{});
 
-	const handleTrashChange = useCallback(()=>{
-		onSettingChange("useSystemTrash", !useSystemTrash);
-	},[onSettingChange,useSystemTrash]);
+	// const handleTrashChange = useCallback(()=>{
+	// 	onSettingChange("useSystemTrash", !useSystemTrash);
+	// },[onSettingChange,useSystemTrash]);
 
 	return (
 		<div className="janitor-modal-wrapper">
+			<div className="janitor-modal-title">Janitor Scan Results</div>
 			<div className="janitor-modal-content">
 				{scanning ? <h4>Scanning...</h4> : <ScanResults {...props} />}
 			</div>
 			<div className="janitor-modal-footer">
-				<div className="janitor-footer-settings">
+				{/* <div className="janitor-footer-settings">
 					<label htmlFor="useSystemTrash">Use System Trash</label>
 					<input name="useSystemTrash" id="useSystemTrash" type="checkbox" checked={useSystemTrash} onChange={handleTrashChange} />
-				</div>
+				</div> */}
 				<div className="janitor-footer-buttons">
-					{somethingSelected && <button className="" onClick={handleTrash}>Trash</button>}
-					{somethingSelected && <button className="" onClick={handleDelete}>Delete</button>}
-					<button className="mod-cta" onClick={onClose}>Close</button>
+					<button style={{visibility: somethingSelected ? 'visible' : 'hidden' }} className="" onClick={handles[OperationType.Trash]}>Trash (Obsidian)</button>
+					<button style={{visibility: somethingSelected ? 'visible' : 'hidden' }} className="" onClick={handles[OperationType.TrashSystem]}>Trash (System)</button>
+					<button style={{visibility: somethingSelected ? 'visible' : 'hidden' }} className="" onClick={handles[OperationType.Delete]}>Delete</button>
+					<button className="mod-cta" onClick={onClose}>Cancel</button>
 				</div>	
 			</div>
 		</div>

@@ -1,3 +1,4 @@
+import { DEFAULT_SETTINGS } from 'src/JanitorSettings';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import JanitorPlugin from 'main';
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
@@ -39,6 +40,18 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 				})
 				);
 		
+		new Setting(containerEl)
+			.setName('Always Prompt for big files')
+			.setDesc('Always prompt before deleting big files')
+			.addToggle(bool => bool
+				.setValue(this.plugin.settings.promptForBigFiles)
+				.onChange(async (value) => {
+					console.log('changingpromptForBigFiles: ', value);
+					this.plugin.settings.promptForBigFiles= value;
+					await this.plugin.saveSettings();
+				})
+				);
+
 		// new Setting(containerEl)
 		// 	.setName("Default Operation")
 		// 	.setDesc("Either permanently delete or move to the trash (system or Obsidian)")
@@ -62,6 +75,26 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 		"Removes files with big dimensions",
 		"processBig"
 		);
+
+		if(this.plugin.settings.processBig){
+			new Setting(containerEl)
+			.setName("File Size Limit (KB)")
+			.setDesc("Files larger than this size will be considered for removal.")
+			.addText(num => num
+				.setValue(this.plugin.settings.sizeLimitKb.toString())
+				.onChange(async value => {
+					const num = parseInt(value);
+					if(isFinite(num)){
+						this.plugin.settings.sizeLimitKb = num;
+					} else {
+						this.plugin.settings.sizeLimitKb = DEFAULT_SETTINGS.sizeLimitKb;
+					}
+					await this.plugin.saveSettings();
+				})
+				)
+		}
+
+
 		this.createToggle(containerEl, "Process Expired",
 		"Remove notes that have expired",
 		"processExpired"
