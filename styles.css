@@ -51,3 +51,26 @@ If your plugin does not need CSS, delete this file.
 	/* border: 1px solid; */
 	padding: 5px;
 }
+
+.janitor-date-picker {
+	padding: 5px;;
+}
+
+.janitor-date-picker label span {
+	margin-right: 1em;;
+}
+
+
+.janitor-date-picker-buttons {
+	float: right;
+}
+
+.janitor-date-shortcuts {
+	white-space: nowrap;
+	margin-top: 1em;
+	text-align: center;
+}
+
+.janitor-date-shortcuts .janitor-date-picker-buttons {
+	display: inline-block;
+}

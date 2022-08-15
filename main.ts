@@ -8,6 +8,7 @@ import { DEFAULT_SETTINGS, JanitorSettings } from 'src/JanitorSettings';
 import JanitorSettingsTab from 'src/PluginSettingsTab';
 import { delay } from 'src/Utils';
 import { FileProcessor } from 'src/FileProcessor';
+import moment from 'moment';
 
 // Remember to rename these classes and interfaces!
 
@@ -43,7 +44,7 @@ export default class JanitorPlugin extends Plugin {
 			id: 'janitor-scan-files-noprompt',
 			name: 'Scan Files (without prompt)',
 			callback: () => {
-				this.scanFiles(false,true);
+				this.scanFiles(false, true);
 			}
 		});
 		this.addCommand({
@@ -59,17 +60,21 @@ export default class JanitorPlugin extends Plugin {
 			name: 'Sets the expiration date of the current note',
 			checkCallback: (checking: boolean) => {
 				// console.log(editor.getSelection());
-				
+
 				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if(markdownView){
+				if (markdownView) {
 					if (!checking) {
 						this.chooseDate(markdownView);
-					}	
+					}
 					return true;
 				}
 				return false;
 			}
 		});
+
+		this.createShortcutCommand("janitor-set-expiretion-1week","Set Expiration (1 week)",1,"week");
+		this.createShortcutCommand("janitor-set-expiretion-1month","Set Expiration (1 month)",1,"month");
+		this.createShortcutCommand("janitor-set-expiretion-1year","Set Expiration (1 year)",1,"year");
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new JanitorSettingsTab(this.app, this));
@@ -85,13 +90,30 @@ export default class JanitorPlugin extends Plugin {
 
 	frontMatterRegEx = /^---$(.*)^---/sm
 
+	private createShortcutCommand(id:string, name:string, n:number, w:any) {
+		this.addCommand({
+			id: id,
+			name: name,
+			checkCallback: (checking: boolean) => {
+				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (markdownView) {
+					if (!checking) {
+						this.updateNoteWithDate(markdownView.file, moment().add(n,w).format(this.settings.expiredDateFormat));
+					}
+					return true;
+				}
+				return false;
+			}
+		});
+	}
+
 	async chooseDate(view: MarkdownView) {
 
 		new DatePickerModal(this.app, this, view.file).open();
 
 	}
 
-	async updateNoteWithDate(file: TFile, dateToSet: string){
+	async updateNoteWithDate(file: TFile, dateToSet: string) {
 		// const dateToSet="2022-09-15";
 		let content = await this.app.vault.cachedRead(file);
 		content = this.setDateIntoContent(content, dateToSet);
@@ -135,11 +157,11 @@ ${this.settings.expiredAttribute}: ${dateToSet}
 		return content;
 	}
 
-	private updateStatusBar(message: string){
+	private updateStatusBar(message: string) {
 		this.statusBarItemEl.setText(message);
 	}
 
-	private async scanFiles(forcePrompt=false, noPrompt=false) {
+	private async scanFiles(forcePrompt = false, noPrompt = false) {
 		this.updateStatusBar("Janitor Scanning...");
 		let modal;
 		const results = await new FileScanner(this.app, this.settings).scan();
@@ -150,10 +172,10 @@ ${this.settings.expiredAttribute}: ${dateToSet}
 		// We determine if we have to prompt the user,
 		// even if user disabled prompting, we could have to prompt
 		// for big files to avoid deleting important stuff in an unattended way
-		if (this.settings.promptUser && !noPrompt 
+		if (this.settings.promptUser && !noPrompt
 			|| (results.big?.length && this.settings.promptForBigFiles)
 			|| forcePrompt
-			) {
+		) {
 			modal = new JanitorModal(this.app, this);
 			modal.open();
 		}
