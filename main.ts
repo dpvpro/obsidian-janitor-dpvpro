@@ -128,12 +128,9 @@ export default class JanitorPlugin extends Plugin {
 		let yaml = "";
 		if (m) { // we have a frontmatter
 			yaml = m[1];
-			console.log("yaml:", yaml);
-			console.log("yaml length:", yaml.length);
 			if (yaml && yaml.length) { // we have yaml
 				const expiresRegExp = new RegExp(this.settings.expiredAttribute + ":\\s*(.*)");
 				const expdate = expiresRegExp.exec(yaml);
-				console.log("expires: ", expdate);
 				if (expdate) { // we already have an expiry date, we need to change it
 					yaml = yaml.replace(expdate[1], dateToSet);
 				} else {
@@ -167,8 +164,12 @@ ${this.settings.expiredAttribute}: ${dateToSet}
 		const results = await new FileScanner(this.app, this.settings).scan();
 		// artificially introduce waiting for testing purposes
 		// await delay(1000);
-
+		const foundSomething = results.orphans || results.empty || results.expired || results.big;
 		this.updateStatusBar("");
+		if(!foundSomething) {
+			new Notice(`Janitor scanned and found nothing to cleanup`);
+			return;
+		}
 		// We determine if we have to prompt the user,
 		// even if user disabled prompting, we could have to prompt
 		// for big files to avoid deleting important stuff in an unattended way
