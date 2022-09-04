@@ -1,18 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { JanitorView, JanitorViewProps, SelectableItem } from './Views/JanitorView';
-import { App, Modal, Notice, TFile } from "obsidian";
+import { App, Modal,  TFile } from "obsidian";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { createRoot, Root } from "react-dom/client";
 import { ScanResults } from './FileScanner';
-import { FileProcessor } from './FileProcessor';
 import JanitorPlugin from 'main';
-import { threadId } from 'worker_threads';
 import { OperationType } from './JanitorSettings';
 
-function toggleSelection(list: SelectableItem[], ic: number) {
-	return list.map((o, i) => i === ic ? ({ ...o, selected: !o.selected }) : o)
-}
+
 function changeSelection(list: SelectableItem[], names:string[], value:boolean) {
 	return list.map((o, i) => names.contains( o.name) ? ({ ...o, selected: value }) : o)
 }
@@ -39,7 +34,6 @@ export class JanitorModal extends Modal {
 				this.perform(operation);
 			},
 			// defaultOperation: this.plugin.settings.defaultOperation,
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			onSettingChange: (setting: string, value: any) => {
 				this.onSettingChange(setting, value);
 			}
@@ -53,9 +47,7 @@ export class JanitorModal extends Modal {
 	/**
 	 * @deprecated The method should not be used
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	onSettingChange(setting: string, value: any) {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(this.plugin.settings as any)[setting] = value;
 		this.plugin.saveSettings();
 		this.state = {
@@ -77,7 +69,7 @@ export class JanitorModal extends Modal {
 			this.applySelectionChangeToAllSections([item.name], newValue);    
 			// this.state = {
 			// 	...this.state,
-			// 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			// 	
 			// 	[section]: toggleSelection(files, ic)
 			// };
 		} else {
@@ -133,17 +125,14 @@ export class JanitorModal extends Modal {
 
 	onOpen() {
 		const { contentEl } = this;
-		// contentEl.setText('Woah!');
-		// this.titleEl.setText("Obsidian Janitor")	
-		this.root = createRoot(contentEl/*.children[1]*/);
+
+		this.root = createRoot(contentEl);
 		this.render();
 
 	}
 
 	onClose() {
-		const { contentEl } = this;
-		// contentEl.empty();
-		// ReactDOM.unmountComponentAtNode(contentEl);
+
 		this.root.unmount();
 	}
 

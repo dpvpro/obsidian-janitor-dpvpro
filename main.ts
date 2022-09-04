@@ -1,12 +1,9 @@
 import { DatePickerModal } from "./src/Views/DatePickerModal";
 import { OperationType } from "./src/JanitorSettings";
 import { JanitorModal } from "./src/JanitorModal";
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {
-	App,
-	Editor,
 	MarkdownView,
-	Modal,
 	Notice,
 	Plugin,
 	stringifyYaml,
@@ -15,7 +12,6 @@ import {
 import { FileScanner } from "src/FileScanner";
 import { DEFAULT_SETTINGS, JanitorSettings } from "src/JanitorSettings";
 import JanitorSettingsTab from "src/PluginSettingsTab";
-import { delay } from "src/Utils";
 import { FileProcessor } from "src/FileProcessor";
 import moment from "moment";
 

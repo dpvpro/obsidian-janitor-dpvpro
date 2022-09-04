@@ -1,6 +1,5 @@
 import * as React from "react";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { OperationType } from "src/JanitorSettings";
 
 export interface SelectableItem {
@@ -90,10 +89,10 @@ function ScanResults({ orphans,empty,big,expired, onSelectionChange }:
 	return (
 		<div className="janitor-scan-results">
 			{/* <fieldset> */}
-			{orphans && <FileList files={orphans} onChange={handleSelectionChange("orphans")} title="Orphans" />}
-			{empty && <FileList title="Empty" files={empty} onChange={handleSelectionChange("empty")} />}
-			{expired && <FileList title="Expired" files={expired} onChange={handleSelectionChange("expired")} />}
-			{big && <FileList title="Big" files={big} onChange={handleSelectionChange("big")} />}
+			{orphans && orphans.length>0 && <FileList files={orphans} onChange={handleSelectionChange("orphans")} title="Orphans" />}
+			{empty && empty.length>0 &&  <FileList title="Empty" files={empty} onChange={handleSelectionChange("empty")} />}
+			{expired && expired.length>0 && <FileList title="Expired" files={expired} onChange={handleSelectionChange("expired")} />}
+			{big && big.length>0 && <FileList title="Big" files={big} onChange={handleSelectionChange("big")} />}
 			{/* </fieldset> */}
 		</div>
 

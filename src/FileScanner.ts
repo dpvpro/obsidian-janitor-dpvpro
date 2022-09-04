@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { JanitorSettings } from './JanitorSettings';
-import { App, CachedMetadata, Editor, FrontMatterCache, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
+import { App, FrontMatterCache, TFile } from 'obsidian';
 import { asyncFilter, partition } from './Utils';
 import { moment } from "obsidian";
 export interface ScanResults {

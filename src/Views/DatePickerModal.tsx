@@ -1,7 +1,5 @@
 import { App, Modal, TFile } from "obsidian";
 import * as React from "react";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useCallback, useState } from "react";
 import { createRoot, Root } from "react-dom/client";
 import JanitorPlugin from '../../main';
 import { moment } from "obsidian";
