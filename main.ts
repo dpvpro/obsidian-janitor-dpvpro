@@ -155,7 +155,7 @@ export default class JanitorPlugin extends Plugin {
 			start = m.index;
 			end = m.index+m[0].length
 		}
-		const newContent = content.substring(0,start)+"---\n"+newYaml+"---"+content.substring(end);
+		const newContent = content.substring(0,start)+"---\n"+newYaml+"---\n"+content.substring(end);
 		this.app.vault.modify(file, newContent);
 	}
 
