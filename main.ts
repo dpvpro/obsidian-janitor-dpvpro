@@ -79,19 +79,19 @@ export default class JanitorPlugin extends Plugin {
 		});
 
 		this.createShortcutCommand(
-			"set-expiretion-1week",
+			"set-expiration-1week",
 			"Set Expiration (1 week)",
 			1,
 			"week"
 		);
 		this.createShortcutCommand(
-			"set-expiretion-1month",
+			"set-expiration-1month",
 			"Set Expiration (1 month)",
 			1,
 			"month"
 		);
 		this.createShortcutCommand(
-			"set-expiretion-1year",
+			"set-expiration-1year",
 			"Set Expiration (1 year)",
 			1,
 			"year"

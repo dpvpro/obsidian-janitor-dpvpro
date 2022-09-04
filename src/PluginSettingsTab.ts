@@ -28,7 +28,7 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 		);
 
 		this.createToggle(containerEl, "Ask Confirmation",
-			"iThe user will be able to select which files to remove",
+			"The user will be able to select which files to remove",
 			"promptUser"
 		);
 
@@ -49,7 +49,7 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			.setHeading();
 
 		this.createToggle(containerEl, "Process Orphans",
-			"Remove media and attachments that ate not in use",
+			"Remove media and attachments that are not in use",
 			"processOrphans"
 		);
 		this.createToggle(containerEl, "Process Empty",
