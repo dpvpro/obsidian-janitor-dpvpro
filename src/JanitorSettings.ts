@@ -33,7 +33,7 @@ export const DEFAULT_SETTINGS: JanitorSettings = {
 	defaultOperation: OperationType.Trash,
 	expiredAttribute: "expires",
 	expiredDateFormat: "YYYY-MM-DD",
-	sizeLimitKb: 100,
+	sizeLimitKb: 1024,
 	processOrphans: true,
 	processEmpty: true,
 	processExpired: true,
