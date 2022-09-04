@@ -32,13 +32,9 @@ export class FileScanner {
 	}
 
 	async scan() {
-		console.log("Scanning Vault...");
 		const files = this.app.vault.getFiles();
 		const [notes, others] = partition(files, this.isNote);
 		const frontMatters = this.getFrontMatters(notes);
-		// console.log(notes, others);
-
-		// const resolvedLinks = notes.reduce((acc:TFile,))
 		const orphans = this.settings.processOrphans && this.findOrphans(notes, others, frontMatters) ;
 		const empty = this.settings.processEmpty && await this.findEmpty(files) ;
 		const expired = this.settings.processExpired && this.findExpired(frontMatters) ;
@@ -51,8 +47,6 @@ export class FileScanner {
 			big,
 			scanning: false
 		} as ScanResults;
-		console.log("Results: ");
-		console.log(results);
 
 		return results;
 	}
@@ -92,20 +86,8 @@ export class FileScanner {
 
 	private findOrphans(notes: TFile[], others: TFile[], frontMatters: IFrontMatter[]) {
 		const resolvedLinks: { [key: string]: number; } = this.getResolvedLinks();
-		// console.log("Consolidated resolvedLinks:");
-		// console.log(resolvedLinks);
-
-		// resolvedLinks contains the links outgoing from the notes
-		// they could be media, attachments or nother notes
-		// they are not the whole story, though, we need to account for
-		// files referred to in the frontMatters (annotation-target for example)
-		// console.log("Consolidated FrontMatters:");
-		// console.log(frontMatters);
 
 		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters, resolvedLinks);
-
-		// console.log("Consolidated resolvedResources:");
-		// console.log(resolvedResources);
 
 		// now resolvedLinksAndResolvedProps contains all resolved resources:
 		// "others" that we collected and are not here are eligible to be purged
@@ -115,7 +97,6 @@ export class FileScanner {
 
 	private getOrphans(others: TFile[], resolvedLinksAndResolvedProps: { [key: string]: number; }) {
 		return others.filter(file => {
-			// console.log(`resolvedLinksAndResolvedProps[${file.path}]`, resolvedLinksAndResolvedProps[file.path]);
 			return !resolvedLinksAndResolvedProps[file.path];
 		});
 	}
@@ -160,10 +141,6 @@ export class FileScanner {
 	}
 
 	private getResolvedLinks() {
-		// console.log("MetadataCache:");
-		// console.log(app.metadataCache);
-		// console.log("resolvedLinks:");
-		// console.log(app.metadataCache.resolvedLinks);
 		const resolvedLinks: { [key: string]: number; } = Object.keys(app.metadataCache.resolvedLinks).
 			reduce((rl: { [key: string]: number; }, fileName: string) => {
 				return Object.assign(rl, app.metadataCache.resolvedLinks[fileName]);

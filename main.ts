@@ -67,8 +67,6 @@ export default class JanitorPlugin extends Plugin {
 			id: "set-expiration",
 			name: "Sets the expiration date of the current note",
 			checkCallback: (checking: boolean) => {
-				// console.log(editor.getSelection());
-
 				const markdownView =
 					this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (markdownView) {
@@ -100,15 +98,15 @@ export default class JanitorPlugin extends Plugin {
 			"year"
 		);
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new JanitorSettingsTab(this.app, this));
 
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		// this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-		if (this.settings.runAtStartup) {
-			console.log("Janitor: running at startUp");
-			this.scanFiles();
-		}
+		
+		this.app.workspace.onLayoutReady(()=>{
+			if (this.settings.runAtStartup) {
+				this.scanFiles();
+			}
+		})
+
 	}
 
 	frontMatterRegEx = /^---$(.*)^---/ms;
@@ -173,7 +171,10 @@ export default class JanitorPlugin extends Plugin {
 		// artificially introduce waiting for testing purposes
 		// await delay(1000);
 		const foundSomething =
-			results.orphans || results.empty || results.expired || results.big;
+			(results.orphans&&results.orphans.length) || 
+			(results.empty&&results.empty.length) || 
+			(results.expired&&results.expired.length) || 
+			(results.big&&results.big.length)
 		this.updateStatusBar("");
 		if (!foundSomething) {
 			new Notice(`Janitor scanned and found nothing to cleanup`);
@@ -208,8 +209,6 @@ export default class JanitorPlugin extends Plugin {
 	}
 
 	async perform(operation: OperationType, files: string[]) {
-		// console.log(this.state);
-		console.log("Janitor: performing " + operation);
 		const fileProcessor = new FileProcessor(this.app);
 		const processingResult = await fileProcessor.process(files, operation);
 		new Notice(

@@ -51,10 +51,8 @@ export class JanitorModal extends Modal {
 		(this.plugin.settings as any)[setting] = value;
 		this.plugin.saveSettings();
 		this.state = {
-			...this.state,
-			// useSystemTrash: this.plugin.settings.useSystemTrash
+			...this.state
 		}
-		// console.log(this.state);
 		this.render();
 	}
 

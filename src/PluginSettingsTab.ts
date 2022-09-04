@@ -37,7 +37,6 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			.setName("Excluded Folders")
 			.setDesc("These Folders will be excluded ")
 			.addSearch(search => {
-				console.log(search);
 				return search;
 			}
 		);
@@ -49,7 +48,6 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			.addToggle(bool => bool
 				.setValue(this.plugin.settings.promptForBigFiles)
 				.onChange(async (value) => {
-					console.log('changingpromptForBigFiles: ', value);
 					this.plugin.settings.promptForBigFiles = value;
 					await this.plugin.saveSettings();
 				})
@@ -144,7 +142,6 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			.addToggle(bool => bool
 				.setValue((this.plugin.settings as any)[prop] as boolean)
 				.onChange(async (value) => {
-					// console.log('changing processOrphans: ', value);
 					(this.plugin.settings as any)[prop] = value;
 					await this.plugin.saveSettings();
 					this.display();
