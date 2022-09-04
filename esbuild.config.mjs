@@ -34,6 +34,7 @@ esbuild.build({
 		...builtins],
 	format: 'cjs',
 	watch: !prod,
+	minify: prod,
 	target: 'es2016',
 	logLevel: "info",
 	sourcemap: prod ? false : 'inline',
