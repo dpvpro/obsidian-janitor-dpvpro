@@ -43,12 +43,10 @@ export class DatePickerModal extends Modal {
 		);
 	}
 	dateShortcut(e: React.MouseEvent<HTMLButtonElement>, n: number, what: any) {
-		// e.preventDefault();
 		this.date = moment()
 			.add(n, what)
 			.format('YYYY-MM-DD');
 		this.render();
-		// return false;
 	}
 
 	onApply(event: React.FormEvent) {
@@ -66,17 +64,12 @@ export class DatePickerModal extends Modal {
 
 	onOpen() {
 		const { contentEl } = this;
-		// contentEl.setText('Woah!');
-		// this.titleEl.setText("Obsidian Janitor")	
-		this.root = createRoot(contentEl/*.children[1]*/);
+		this.root = createRoot(contentEl);
 		this.render();
 
 	}
 
 	onClose() {
-		// const { contentEl } = this;
-		// contentEl.empty();
-		// ReactDOM.unmountComponentAtNode(contentEl);
 		this.root.unmount();
 	}
 

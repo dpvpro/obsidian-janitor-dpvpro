@@ -65,19 +65,10 @@ export class JanitorModal extends Modal {
 			const item = files[ic];
 			const newValue = !item.selected;
 			this.applySelectionChangeToAllSections([item.name], newValue);    
-			// this.state = {
-			// 	...this.state,
-			// 	
-			// 	[section]: toggleSelection(files, ic)
-			// };
 		} else {
 			const allSelected = files.every(file => file.selected);
 			const names = files.map(file=>file.name);
 			this.applySelectionChangeToAllSections(names,!allSelected);
-			// this.state = {
-			// 	...this.state,
-			// 	[section]: files.map(file => ({ ...file, selected: !allSelected }))
-			// }
 		}
 
 		this.render();

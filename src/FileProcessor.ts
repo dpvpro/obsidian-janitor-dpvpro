@@ -48,14 +48,4 @@ export class FileProcessor {
 		}
 		return { deletedFiles, notDeletedFiles };
 	}
-	// async delete(filenames: string[]){
-	// 	for(const file in filenames){
-	// 		const tfile = app.vault.getAbstractFileByPath(file);
-	// 		if(tfile){
-	// 			await app.vault.delete(tfile)
-	// 		} else {
-	// 			console.warn(`Warning: file ${file} was not found for thrashing!`)
-	// 		}
-	// 	}
-	// }
 }

@@ -32,15 +32,6 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			"promptUser"
 		);
 
-		/*
-		 new Setting(containerEl)
-			.setName("Excluded Folders")
-			.setDesc("These Folders will be excluded ")
-			.addSearch(search => {
-				return search;
-			}
-		);
-		*/
 
 		new Setting(containerEl)
 			.setName('Always Prompt for big files')
@@ -53,13 +44,6 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 				})
 			);
 
-		// new Setting(containerEl)
-		// 	.setName("Default Operation")
-		// 	.setDesc("Either permanently delete or move to the trash (system or Obsidian)")
-		// 	.addDropdown(list => list
-		// 		.addOption("")
-
-		// 	)
 
 		new Setting(containerEl)
 			.setHeading();
@@ -105,28 +89,22 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			containerEl.createEl('h3', { text: 'Expiration Processing' });
 
 			new Setting(containerEl)
-				// .setDisabled(!this.plugin.settings.processExpired)
-				// .setDisabled(true)
 				.setName("Metadata Attribute")
 				.setDesc("The frontMatter key in which to search for expiration date")
 				.addText(date => date
 					.setPlaceholder("Insert attribute name (es: expires)")
 					.setValue(this.plugin.settings.expiredAttribute)
-					// .setDisabled(true)
 					.onChange(async value => {
 						this.plugin.settings.expiredAttribute = value;
 						await this.plugin.saveSettings();
 					})
 				);
 			new Setting(containerEl)
-				// .setDisabled(!this.plugin.settings.processExpired)
-				// .setDisabled(true)
 				.setName("Date Format")
 				.setDesc("The format in which the expiration date is stored (e.g. YYYY-MM-DD)")
 				.addText(text => text
 					.setPlaceholder("Insert the date format")
 					.setValue(this.plugin.settings.expiredDateFormat)
-					// .setDisabled(true)
 					.onChange(async value => {
 						this.plugin.settings.expiredDateFormat = value;
 						await this.plugin.saveSettings();

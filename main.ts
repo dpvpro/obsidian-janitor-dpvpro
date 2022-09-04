@@ -15,7 +15,6 @@ import JanitorSettingsTab from "src/PluginSettingsTab";
 import { FileProcessor } from "src/FileProcessor";
 import moment from "moment";
 
-// Remember to rename these classes and interfaces!
 
 export default class JanitorPlugin extends Plugin {
 	settings: JanitorSettings;
