@@ -3,6 +3,7 @@ import { OperationType } from "./src/JanitorSettings";
 import { JanitorModal } from "./src/JanitorModal";
 
 import {
+	Editor,
 	MarkdownView,
 	Notice,
 	Plugin,
@@ -120,6 +121,7 @@ export default class JanitorPlugin extends Plugin {
 				if (markdownView) {
 					if (!checking) {
 						this.updateNoteWithDate(
+							markdownView.editor,
 							markdownView.file,
 							moment()
 								.add(n, w)
@@ -139,6 +141,7 @@ export default class JanitorPlugin extends Plugin {
 
 
 	async updateNoteWithDate(
+		editor: Editor,
 		file: TFile,
 		dateToSet: string
 	) {
@@ -155,8 +158,9 @@ export default class JanitorPlugin extends Plugin {
 			start = m.index;
 			end = m.index+m[0].length
 		}
-		const newContent = content.substring(0,start)+"---\n"+newYaml+"---\n"+content.substring(end);
-		this.app.vault.modify(file, newContent);
+		const frontMatter = "---\n"+newYaml+"---\n";
+		
+		editor.replaceRange(frontMatter, editor.offsetToPos(start), editor.offsetToPos(end))
 	}
 
 	private updateStatusBar(message: string) {
