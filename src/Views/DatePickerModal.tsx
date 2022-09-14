@@ -1,4 +1,4 @@
-import { App, Modal, TFile } from "obsidian";
+import { App, MarkdownView, Modal } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import JanitorPlugin from '../../main';
@@ -8,13 +8,13 @@ export class DatePickerModal extends Modal {
 
 	plugin: JanitorPlugin;
 	root: Root;
-	file: TFile;
+	view: MarkdownView;
 	date: string;
 
-	constructor(app: App, plugin: JanitorPlugin, file: TFile) {
+	constructor(app: App, plugin: JanitorPlugin, view: MarkdownView) {
 		super(app);
 		this.plugin = plugin;
-		this.file = file;
+		this.view = view;
 		this.date = moment().format('YYYY-MM-DD');
 	}
 
@@ -52,7 +52,7 @@ export class DatePickerModal extends Modal {
 	onApply(event: React.FormEvent) {
 		event.preventDefault();
 		const dateToSet = moment(this.date, "YYYY-MM-DD").format(this.plugin.settings.expiredDateFormat);
-		this.plugin.updateNoteWithDate(this.file, dateToSet);
+		this.plugin.updateNoteWithDate(this.view, dateToSet);
 		this.close();
 		return false;
 	}

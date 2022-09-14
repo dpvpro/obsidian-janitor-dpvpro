@@ -9,6 +9,7 @@ import {
 	Plugin,
 	stringifyYaml,
 	TFile,
+	View,
 } from "obsidian";
 import { FileScanner } from "src/FileScanner";
 import { DEFAULT_SETTINGS, JanitorSettings } from "src/JanitorSettings";
@@ -121,8 +122,7 @@ export default class JanitorPlugin extends Plugin {
 				if (markdownView) {
 					if (!checking) {
 						this.updateNoteWithDate(
-							markdownView.editor,
-							markdownView.file,
+							markdownView,
 							moment()
 								.add(n, w)
 								.format(this.settings.expiredDateFormat)
@@ -136,31 +136,35 @@ export default class JanitorPlugin extends Plugin {
 	}
 
 	async chooseDate(view: MarkdownView) {
-		new DatePickerModal(this.app, this, view.file).open();
+		new DatePickerModal(this.app, this, view).open();
 	}
 
 
 	async updateNoteWithDate(
-		editor: Editor,
-		file: TFile,
+		view: MarkdownView,
 		dateToSet: string
 	) {
-		const metaData = this.app.metadataCache.getFileCache(file)?.frontmatter;
+		const metaData = this.app.metadataCache.getFileCache(view.file)?.frontmatter;
 		let start = metaData?.position.start.offset || 0;
 		let end = metaData?.position.end.offset || 0;
 		// no metadata could also mean empty metadata secion
 		const newMetadata = {...metaData, ...{[this.settings.expiredAttribute]: dateToSet}, position: undefined}
 		const newYaml = stringifyYaml(newMetadata);
-		const content = await this.app.vault.cachedRead(file);
+		const content = await this.app.vault.cachedRead(view.file);
 		const m = this.frontMatterRegEx.exec(content);
-		if(!metaData && m) {
+		if(!metaData && m) { 
 			//empty frontmatter
 			start = m.index;
 			end = m.index+m[0].length
 		}
 		const frontMatter = "---\n"+newYaml+"---\n";
-		
-		editor.replaceRange(frontMatter, editor.offsetToPos(start), editor.offsetToPos(end))
+		// if(view.getMode()) reading = "preview" edit = "source"
+		if(view.getMode()==="source"){
+			view.editor.replaceRange(frontMatter, view.editor.offsetToPos(start), view.editor.offsetToPos(end))
+		} else {
+			const newContent = content.substring(0,start)+frontMatter+content.substring(end);
+			this.app.vault.modify(view.file, newContent);
+		}
 	}
 
 	private updateStatusBar(message: string) {
