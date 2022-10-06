@@ -115,13 +115,16 @@ const FileList = ({files, onChange, title}:{files:SelectableItem[],
 
 	
 	const allSelected = files.every(file => file.selected);
+	const numSelected = files.filter(file => file.selected).length;
 
 	return (<div className="janitor-files-wrapper">
 		<div className="janitor-scan-section-title">
 			<label title={`Click to ${allSelected?"unselect":"select"} these ${files.length} items`}>
 			<input type="checkbox" checked={allSelected} onChange={handleOnChange(-1)} />
 			{title} ({files.length} items) 
+			{(numSelected > 0) && <>&nbsp; ({numSelected} selected)</>}
 			</label>
+			
 		</div>
 			
 		{
