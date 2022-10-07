@@ -1,5 +1,6 @@
+import { ExcludedFilesModal } from './Views/ExcludedFilesModal';
 import { DEFAULT_SETTINGS } from "src/JanitorSettings";
-import JanitorPlugin from "main";
+import JanitorPlugin from "./main";
 import { App, PluginSettingTab, Setting } from "obsidian";
 
 export default class JanitorSettingsTab extends PluginSettingTab {
@@ -31,12 +32,6 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			"runAtStartup"
 		);
 
-		this.createToggle(
-			containerEl,
-			"Ignore Obsidian Excluded Files",
-			"Does not process files matching the Excluded Files filters in Obsidian Settings",
-			"honorObsidianExcludedFiles"
-		);
 
 		this.createToggle(
 			containerEl,
@@ -139,6 +134,29 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 						})
 				);
 		}
+
+		containerEl.createEl("h3", { text: "File Exclusions" });
+
+		this.createToggle(
+			containerEl,
+			"Ignore Obsidian Excluded Files",
+			"Does not process files matching the Excluded Files filters in Obsidian Settings",
+			"honorObsidianExcludedFiles"
+		);
+
+
+
+		new Setting(containerEl)
+		.setName("Excluded Files")
+		.setDesc("Excluded files will not be processed")
+		.addButton(cb => {
+			cb.setButtonText("Manage");
+			cb.onClick((evt:MouseEvent)=>{
+				//TODO: pass callback
+				new ExcludedFilesModal(this.app, this.plugin.settings).open();
+			})
+		});
+
 
 
 	}

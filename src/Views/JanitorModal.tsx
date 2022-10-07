@@ -1,11 +1,11 @@
 
-import { JanitorView, JanitorViewProps, SelectableItem } from './Views/JanitorView';
+import { JanitorView, JanitorViewProps, SelectableItem } from './JanitorView';
 import { App, Modal,  TFile } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
-import { ScanResults } from './FileScanner';
-import JanitorPlugin from 'main';
-import { OperationType } from './JanitorSettings';
+import { ScanResults } from '../FileScanner';
+import JanitorPlugin from '../main';
+import { OperationType } from '../JanitorSettings';
 
 
 function changeSelection(list: SelectableItem[], names:string[], value:boolean) {

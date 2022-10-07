@@ -1,6 +1,6 @@
-import { DatePickerModal } from "./src/Views/DatePickerModal";
-import { OperationType } from "./src/JanitorSettings";
-import { JanitorModal } from "./src/JanitorModal";
+import { DatePickerModal } from "./Views/DatePickerModal";
+import { OperationType } from "./JanitorSettings";
+import { JanitorModal } from "./Views/JanitorModal";
 
 import {
 	Editor,
