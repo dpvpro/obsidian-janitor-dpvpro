@@ -1,3 +1,4 @@
+import { App, TFile } from "obsidian";
 export function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
 }
@@ -12,4 +13,18 @@ export async function asyncFilter<T>(arr:T[], predicate:(e:T)=>Promise<boolean>)
 	const results = await Promise.all(arr.map(predicate));
 
 	return arr.filter((_v, index) => results[index]);
+}
+
+
+
+export  function getFolders(app: App):string[]{
+    //@ts-ignore
+    const files = app.vault.adapter.files;
+    const folders = [];
+    for(const key in files){
+        if(files[key].type === "folder"){
+            folders.push(files[key].realpath);
+        }
+    }
+    return folders;
 }
