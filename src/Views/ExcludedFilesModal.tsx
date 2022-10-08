@@ -84,9 +84,7 @@ const ExcudedFilesView = ({ filters, folders, onCancel, onFilterChanged }: Excud
 
 	const onAdd = useCallback((e: React.MouseEvent) => {
 		setState(state => {
-			console.group("onAdd");
-			console.log(state.value);
-			console.groupEnd();
+	
 			return ({
 				...state,
 				filters: [...state.filters, state.value],
@@ -96,10 +94,7 @@ const ExcudedFilesView = ({ filters, folders, onCancel, onFilterChanged }: Excud
 	}, [])
 
 	const onChange = useCallback((newValue: any, actionMeta: any) => {
-		console.group("onChange");
-		console.log(newValue);
-		console.log(`action: ${actionMeta.action}`);
-		console.groupEnd();
+
 		if (actionMeta.action === "select-option" || actionMeta.action === "create-option") {
 			setState(state => {
 				return ({
@@ -112,10 +107,7 @@ const ExcudedFilesView = ({ filters, folders, onCancel, onFilterChanged }: Excud
 	}, []);
 
 	const onInputChange = useCallback((newValue: unknown, actionMeta: any) => {
-		console.group("onChange");
-		console.log(newValue);
-		console.log(`action: ${actionMeta.action}`);
-		console.groupEnd();
+
 		if (actionMeta.action === "input-change") {
 			setState(state => ({ ...state, value: newValue as string }));
 		}

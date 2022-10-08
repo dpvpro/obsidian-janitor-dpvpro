@@ -68,7 +68,7 @@ export class JanitorModal extends Modal {
 		const fullPath = path.join(basePath, item.name);
 		//@ts-ignore
 		const res = await this.app.openWithDefaultApp(item.name);
-		console.log(res);
+
 	}
 
 	handleSelectionChange(ic: number, section: string) {
