@@ -48,8 +48,6 @@ const createLabel = ({ value, label }: { label: string, value: string }) => {
 const customStyles = {
 	option: (provided: any, state: any) => {
 
-		// if(state.label === "/") console.log(state);
-
 		return {
 			...provided,
 			background: state.isFocused ? "var(--background-secondary)" : "var(--background-primary)",
