@@ -33,15 +33,18 @@ export class FileScanner {
 
 	async scan() {
 		const allFiles = this.app.vault.getFiles();
-		//@ts-ignore
-		const excudedFolders: string[] = this.app.vault.config.userIgnoreFilters;
-		console.log(excudedFolders);
-		const regexes = excudedFolders.map<RegExp>((filter:string) => new RegExp(filter,"i"));
-		const files = this.settings.honorObsidianExcludedFiles? allFiles.filter(file=>{
+		let exclusionFilters = this.settings.excludedFilesFilters || [];
+		
+		if(this.settings.honorObsidianExcludedFiles){
+			//@ts-ignore
+			exclusionFilters = exclusionFilters.concat(this.app.vault.config.userIgnoreFilters)
+		}
+		
+		const regexes = exclusionFilters.map<RegExp>((filter:string) => new RegExp(filter,"i"));
+		
+		const files = allFiles.filter(file=>{
 			return !regexes.some(re=>re.exec(file.path));
-		})
-		: allFiles
-		;
+		});
 
 		const [notes, others] = partition(files, this.isNote);
 		const frontMatters = this.getFrontMatters(notes);

@@ -144,18 +144,30 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			"honorObsidianExcludedFiles"
 		);
 
+		
 
-
-		new Setting(containerEl)
+		const exclusionSetting = new Setting(containerEl)
 		.setName("Excluded Files")
 		.setDesc("Excluded files will not be processed")
 		.addButton(cb => {
 			cb.setButtonText("Manage");
 			cb.onClick((evt:MouseEvent)=>{
-				//TODO: pass callback
-				new ExcludedFilesModal(this.app, this.plugin.settings).open();
+				new ExcludedFilesModal(this.app, this.plugin.settings,
+					async (filters:string[])=>{
+						this.plugin.settings.excludedFilesFilters = filters;
+						await this.plugin.saveSettings();
+						this.display();
+					})
+					.open();
 			})
 		});
+
+		if(this.plugin.settings.excludedFilesFilters && this.plugin.settings.excludedFilesFilters.length){
+			const ul = exclusionSetting.descEl.createEl("ul");
+			this.plugin.settings.excludedFilesFilters.forEach(filter=>{
+				ul.createEl("li").setText(filter);
+			})
+		}
 
 
 

@@ -1,10 +1,10 @@
 
 import * as React from "react";
-import { App, Modal} from "obsidian";
+import { App, Modal } from "obsidian";
 import { JanitorSettings } from "src/JanitorSettings";
 import { createRoot, Root } from "react-dom/client";
 import CloseIcon from "../svg/close.svg";
-import { useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Info, SettingControl, SettingItem, SettingsInfo } from "./SettingControls";
 import { getFolders } from "src/Utils";
 import { SelectObs } from "./Select";
@@ -12,23 +12,35 @@ import { SelectObs } from "./Select";
 export class ExcludedFilesModal extends Modal {
 	settings: JanitorSettings;
 	root: Root;
-	state: any;
+	onFiltersChanged: (filters: string[]) => void;
+	
 
-	constructor(app: App, settings: JanitorSettings) {
+	constructor(app: App, settings: JanitorSettings, onFiltersChanged: (filters:string[])=>void) {
 		super(app);
 		this.settings = settings;
-		this.state = {
-		}
+		this.titleEl.setText("Janitor Excluded Files");
+		this.onFiltersChanged = onFiltersChanged;
 	}
 
+
+
 	render() {
-		const folders = getFolders(this.app).map(f => ({ value: f, label: f }));
-	
+		const folders = getFolders(this.app).map(f => ({
+			value: f.endsWith("/") ? f : f + "/",
+
+			label: f
+		}));
+
 		this.root.render(
 			<React.StrictMode>
-				<ExcudedFilesView 
-					filters={this.settings.excludedFilesFilters} 
+				<ExcudedFilesView
+					filters={this.settings.excludedFilesFilters}
 					folders={folders}
+					onCancel={()=>{this.close()}}
+					onFilterChanged={(filters:string[])=>{
+						this.close();
+						this.onFiltersChanged && this.onFiltersChanged(filters);
+					}}
 				/>
 			</React.StrictMode>
 		);
@@ -51,37 +63,106 @@ export class ExcludedFilesModal extends Modal {
 type ExcudedFilesViewProps = {
 	filters: string[],
 	folders: {
-        value: string;
-        label: string;
-    }[]
+		value: string;
+		label: string;
+	}[],
+	onCancel: ()=>void,
+	onFilterChanged: (filters:string[])=>void
 }
 // https://stackoverflow.com/questions/54890660/react-select-dropdown-opens-inside-modal
 // https://stackoverflow.com/questions/57089251/react-select-can-not-overlay-react-modal
-const ExcudedFilesView = ({filters, folders}: ExcudedFilesViewProps) => {
+const ExcudedFilesView = ({ filters, folders, onCancel, onFilterChanged }: ExcudedFilesViewProps) => {
 
-	const [list, update] = useState(filters);
+	const [state, setState] = useState({
+		filters,
+		value: ""
+	});
+	const list = state.filters;
+
+	// const [currentValue, updateValue] = useState("");
 	const ref = useRef<HTMLDivElement>(null);
 
-	const onAdd = React.useCallback((e:React.MouseEvent)=>{
+	const onAdd = useCallback((e: React.MouseEvent) => {
+		setState(state => {
+			console.group("onAdd");
+			console.log(state.value);
+			console.groupEnd();
+			return ({
+				...state,
+				filters: [...state.filters, state.value],
+				value: ""
+			})
+		})
+	}, [])
 
-	},[])
+	const onChange = useCallback((newValue: any, actionMeta: any) => {
+		console.group("onChange");
+		console.log(newValue);
+		console.log(`action: ${actionMeta.action}`);
+		console.groupEnd();
+		if (actionMeta.action === "select-option" || actionMeta.action === "create-option") {
+			setState(state => {
+				return ({
+					...state,
+					filters: [...state.filters, newValue.value],
+					value: ""
+				})
+			})
+		}
+	}, []);
+
+	const onInputChange = useCallback((newValue: unknown, actionMeta: any) => {
+		console.group("onChange");
+		console.log(newValue);
+		console.log(`action: ${actionMeta.action}`);
+		console.groupEnd();
+		if (actionMeta.action === "input-change") {
+			setState(state => ({ ...state, value: newValue as string }));
+		}
+	}, [])
+
+	const onDelete = useCallback((i:number)=>{
+		setState(state=>{
+
+			return ({
+				...state,
+				filters: state.filters.filter((v,index)=>!(i===index))
+			})
+		})
+	},[]);
+
+	const onDone = useCallback(()=>{
+		onFilterChanged && onFilterChanged(state.filters);
+	},[state.filters]);
 
 	return <div ref={ref}>
-		{list.map(filter=>(
-			<div className="mobile-option-setting-item">
+		<div>Files matching the following filters are currently ignored::</div>
+		{list.map((filter, i) => (
+			<div key={i} className="mobile-option-setting-item">
 				<span className="mobile-option-setting-item-name">{filter}</span>
-				<span className="mobile-option-setting-item-option-icon"><CloseIcon /></span>
+				<span className="mobile-option-setting-item-option-icon" onClick={()=>onDelete(i)}><CloseIcon /></span>
 			</div>
 		))}
 		<SettingItem>
 			<SettingsInfo name="Filter" description="" />
 			<SettingControl>
-			<SelectObs
-						container={ref.current || document.body}
-                        options={folders}
-                        placeholder="Select a folder..." />
-						<button onClick={onAdd}>Add</button>
+				<SelectObs
+					key={filters.length}
+					value={state.value}
+					container={document.body}
+					options={folders}
+					placeholder="Insert folder or regex..."
+					newLabel={`Add "{0}"`}
+					onChange={onChange}
+					onInputChange={onInputChange}
+				/>
+				<button onClick={onAdd}>Add</button>
 			</SettingControl>
 		</SettingItem>
+		<div className="modal-button-container">
+			<button className="mod-cta" onClick={onDone}>Done</button>
+			<button onClick={onCancel}>Cancel</button></div>
 	</div>
 }
+
+
