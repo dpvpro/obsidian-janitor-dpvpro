@@ -24,6 +24,10 @@ expires: 2022-09-01
 ```
 Janitor also comes with utilities command used to easily set expiration date into notes.
 
+## Excluded Files
+Janitor can exclude files that are excluded by Obsidian (Settings->Files & Linkds->Excluded files) but users can also specify different criterias for exclusions (for example based on file extension or path).
+
+
 ## How to run
 Janitor could be set to run at startup. If "ask confirmation" is set, it will prompt the user with a confirmation dialog. User can select which files to delete and which action to perform (trash in Obsidian, trash in OS or delete permanently).
 
