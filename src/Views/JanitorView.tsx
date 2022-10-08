@@ -14,6 +14,8 @@ export interface JanitorViewProps {
 	expired: SelectableItem[] | false,
 	onClose: ()=>void,
 	onSelectionChange: (i:number,section:string)=>void,
+	onOpen: (i:number,section:string)=>void,
+
 	onPerform(operation:string):void,
 	// useSystemTrash: boolean,
 	onSettingChange:(setting:string, value:any)=>void
@@ -69,12 +71,14 @@ export const JanitorView = (props: JanitorViewProps) => {
 		</div>
 	)
 };
-function ScanResults({ orphans,empty,big,expired, onSelectionChange }: 
+function ScanResults({ orphans,empty,big,expired, onSelectionChange, onOpen }: 
 	{ orphans: SelectableItem[] | false, 
 		empty: SelectableItem[] | false,
 		big: SelectableItem[] | false,
 		expired: SelectableItem[] | false,
-		onSelectionChange:(i:number,section:string)=>void }) {
+		onSelectionChange:(i:number,section:string)=>void,
+		onOpen:(i:number,section:string)=>void
+	}) {
 	
 	const handleSelectionChange =
 		useCallback((section:string)=>
@@ -85,14 +89,21 @@ function ScanResults({ orphans,empty,big,expired, onSelectionChange }:
 
 	;
 
+	const handleOpen =
+		useCallback((section:string)=>
+			useCallback((i:number)=>{
+				onOpen(i,section);
+			},[onOpen,section])	
+		,[onOpen ])
 
+	;
 	return (
 		<div className="janitor-scan-results">
 			{/* <fieldset> */}
-			{orphans && orphans.length>0 && <FileList files={orphans} onChange={handleSelectionChange("orphans")} title="Orphans" />}
-			{empty && empty.length>0 &&  <FileList title="Empty" files={empty} onChange={handleSelectionChange("empty")} />}
-			{expired && expired.length>0 && <FileList title="Expired" files={expired} onChange={handleSelectionChange("expired")} />}
-			{big && big.length>0 && <FileList title="Big" files={big} onChange={handleSelectionChange("big")} />}
+			{orphans && orphans.length>0 && <FileList files={orphans} onChange={handleSelectionChange("orphans")} onOpen={handleOpen("orphans")} title="Orphans" />}
+			{empty && empty.length>0 &&  <FileList title="Empty" files={empty} onChange={handleSelectionChange("empty")}  onOpen={handleOpen("empty")} />}
+			{expired && expired.length>0 && <FileList title="Expired" files={expired} onChange={handleSelectionChange("expired")}  onOpen={handleOpen("expired")} />}
+			{big && big.length>0 && <FileList title="Big" files={big} onChange={handleSelectionChange("big")}  onOpen={handleOpen("big")} />}
 			{/* </fieldset> */}
 		</div>
 
@@ -100,8 +111,9 @@ function ScanResults({ orphans,empty,big,expired, onSelectionChange }:
 
 }
 
-const FileList = ({files, onChange, title}:{files:SelectableItem[], 
+const FileList = ({files, onChange, onOpen, title}:{files:SelectableItem[], 
 	onChange:(i:number)=>void,
+	onOpen:(i:number)=>void,
 	title: string}
 	) => {
 
@@ -113,7 +125,13 @@ const FileList = ({files, onChange, title}:{files:SelectableItem[],
 		,[onChange,i])
 	,[onChange]);
 
-	
+	const handleOpen = useCallback((i:number)=>
+	useCallback(
+		()=>{
+			onOpen(i);
+		}
+	,[onChange,i])
+,[onChange]);
 	const allSelected = files.every(file => file.selected);
 	const numSelected = files.filter(file => file.selected).length;
 
@@ -137,6 +155,7 @@ const FileList = ({files, onChange, title}:{files:SelectableItem[],
 						onChange={handleOnChange(i)}
 						type="checkbox" />
 					<span>{file.name}</span>
+					<a href="#" className="openFileIcon" onClick={handleOpen(i)} >open</a>
 					</label>
 				</div>
 			))

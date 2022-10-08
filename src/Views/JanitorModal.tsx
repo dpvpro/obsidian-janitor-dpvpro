@@ -6,6 +6,7 @@ import { createRoot, Root } from "react-dom/client";
 import { ScanResults } from '../FileScanner';
 import JanitorPlugin from '../main';
 import { OperationType } from '../JanitorSettings';
+import path from 'path';
 
 
 function changeSelection(list: SelectableItem[], names:string[], value:boolean) {
@@ -36,6 +37,9 @@ export class JanitorModal extends Modal {
 			// defaultOperation: this.plugin.settings.defaultOperation,
 			onSettingChange: (setting: string, value: any) => {
 				this.onSettingChange(setting, value);
+			},
+			onOpen:  (i: number, section: string) => {
+				this.handleOpen(i, section);
 			}
 		};
 	}
@@ -56,7 +60,16 @@ export class JanitorModal extends Modal {
 		this.render();
 	}
 
-
+	async handleOpen(ic: number, section: string) {
+		const files = ((this.state as any)[section]) as SelectableItem[];
+		const item = files[ic];
+		//@ts-ignore
+		const basePath = this.app.vault.adapter.getBasePath();
+		const fullPath = path.join(basePath, item.name);
+		//@ts-ignore
+		const res = await this.app.openWithDefaultApp(item.name);
+		console.log(res);
+	}
 
 	handleSelectionChange(ic: number, section: string) {
 		const files = ((this.state as any)[section]) as SelectableItem[];
