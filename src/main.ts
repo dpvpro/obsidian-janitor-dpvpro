@@ -21,20 +21,13 @@ import moment from "moment";
 export default class JanitorPlugin extends Plugin {
 	settings: JanitorSettings;
 	statusBarItemEl: HTMLElement;
+    ribbonIconEl: HTMLElement;
 
 	async onload() {
 		await this.loadSettings();
 
 		if (this.settings.addRibbonIcon) {
-			const ribbonIconEl = this.addRibbonIcon(
-				"trash",
-				"Janitor: scan vault",
-				(evt: MouseEvent) => {
-					this.scanFiles();
-				}
-			);
-			// Perform additional things with the ribbon
-			ribbonIconEl.addClass("janitor-ribbon-class");
+			this.addIcon();
 		}
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
@@ -227,6 +220,20 @@ export default class JanitorPlugin extends Plugin {
 	}
 
 	onunload() {}
+
+	public addIcon() {
+        this.ribbonIconEl = this.addRibbonIcon('trash', 'Janitor: scan vault', 
+		(evt: MouseEvent) => {
+            this.scanFiles();
+        });
+        this.ribbonIconEl.addClass('janitor-ribbon-class');
+    }
+
+    public removeIcon(){
+        if(this.ribbonIconEl){
+            this.ribbonIconEl.remove();
+        }
+    }
 
 	async loadSettings() {
 		this.settings = Object.assign(
