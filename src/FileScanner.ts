@@ -34,8 +34,8 @@ export class FileScanner {
 	async scan() {
 		const allFiles = this.app.vault.getFiles();
 		let exclusionFilters = this.settings.excludedFilesFilters || [];
-		
-		if(this.settings.honorObsidianExcludedFiles){
+		//@ts-ignore
+		if(this.settings.honorObsidianExcludedFiles && this.app.vault.config.userIgnoreFilters ){
 			//@ts-ignore
 			exclusionFilters = exclusionFilters.concat(this.app.vault.config.userIgnoreFilters)
 		}
