@@ -222,6 +222,7 @@ export default class JanitorPlugin extends Plugin {
 	onunload() {}
 
 	public addIcon() {
+		this.removeIcon();
         this.ribbonIconEl = this.addRibbonIcon('trash', 'Janitor: scan vault', 
 		(evt: MouseEvent) => {
             this.scanFiles();
