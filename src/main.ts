@@ -17,11 +17,10 @@ import JanitorSettingsTab from "src/PluginSettingsTab";
 import { FileProcessor } from "src/FileProcessor";
 import moment from "moment";
 
-
 export default class JanitorPlugin extends Plugin {
 	settings: JanitorSettings;
 	statusBarItemEl: HTMLElement;
-    ribbonIconEl: HTMLElement;
+	ribbonIconEl: HTMLElement;
 
 	async onload() {
 		await this.loadSettings();
@@ -94,13 +93,17 @@ export default class JanitorPlugin extends Plugin {
 
 		this.addSettingTab(new JanitorSettingsTab(this.app, this));
 
-		
-		this.app.workspace.onLayoutReady(()=>{
+		// this.app.workspace.onLayoutReady(()=>{
+		// 	if (this.settings.runAtStartup) {
+		// 		this.scanFiles();
+		// 	}
+		// })
+
+		this.app.metadataCache.on("resolved", () => {
 			if (this.settings.runAtStartup) {
 				this.scanFiles();
 			}
-		})
-
+		});
 	}
 
 	frontMatterRegEx = /^---$(.*)^---/ms;
@@ -132,30 +135,39 @@ export default class JanitorPlugin extends Plugin {
 		new DatePickerModal(this.app, this, view).open();
 	}
 
-
-	async updateNoteWithDate(
-		view: MarkdownView,
-		dateToSet: string
-	) {
-		const metaData = this.app.metadataCache.getFileCache(view.file)?.frontmatter;
+	async updateNoteWithDate(view: MarkdownView, dateToSet: string) {
+		const metaData = this.app.metadataCache.getFileCache(
+			view.file
+		)?.frontmatter;
 		let start = metaData?.position.start.offset || 0;
 		let end = metaData?.position.end.offset || 0;
 		// no metadata could also mean empty metadata secion
-		const newMetadata = {...metaData, ...{[this.settings.expiredAttribute]: dateToSet}, position: undefined}
+		const newMetadata = {
+			...metaData,
+			...{ [this.settings.expiredAttribute]: dateToSet },
+			position: undefined,
+		};
 		const newYaml = stringifyYaml(newMetadata);
 		const content = await this.app.vault.cachedRead(view.file);
 		const m = this.frontMatterRegEx.exec(content);
-		if(!metaData && m) { 
+		if (!metaData && m) {
 			//empty frontmatter
 			start = m.index;
-			end = m.index+m[0].length
+			end = m.index + m[0].length;
 		}
-		const frontMatter = "---\n"+newYaml+"---\n";
+		const frontMatter = "---\n" + newYaml + "---\n";
 		// if(view.getMode()) reading = "preview" edit = "source"
-		if(view.getMode()==="source"){
-			view.editor.replaceRange(frontMatter, view.editor.offsetToPos(start), view.editor.offsetToPos(end))
+		if (view.getMode() === "source") {
+			view.editor.replaceRange(
+				frontMatter,
+				view.editor.offsetToPos(start),
+				view.editor.offsetToPos(end)
+			);
 		} else {
-			const newContent = content.substring(0,start)+frontMatter+content.substring(end);
+			const newContent =
+				content.substring(0, start) +
+				frontMatter +
+				content.substring(end);
 			this.app.vault.modify(view.file, newContent);
 		}
 	}
@@ -171,10 +183,10 @@ export default class JanitorPlugin extends Plugin {
 		// artificially introduce waiting for testing purposes
 		// await delay(1000);
 		const foundSomething =
-			(results.orphans&&results.orphans.length) || 
-			(results.empty&&results.empty.length) || 
-			(results.expired&&results.expired.length) || 
-			(results.big&&results.big.length)
+			(results.orphans && results.orphans.length) ||
+			(results.empty && results.empty.length) ||
+			(results.expired && results.expired.length) ||
+			(results.big && results.big.length);
 		this.updateStatusBar("");
 		if (!foundSomething) {
 			new Notice(`Janitor scanned and found nothing to cleanup`);
@@ -223,18 +235,21 @@ export default class JanitorPlugin extends Plugin {
 
 	public addIcon() {
 		this.removeIcon();
-        this.ribbonIconEl = this.addRibbonIcon('trash', 'Janitor: scan vault', 
-		(evt: MouseEvent) => {
-            this.scanFiles();
-        });
-        this.ribbonIconEl.addClass('janitor-ribbon-class');
-    }
+		this.ribbonIconEl = this.addRibbonIcon(
+			"trash",
+			"Janitor: scan vault",
+			(evt: MouseEvent) => {
+				this.scanFiles();
+			}
+		);
+		this.ribbonIconEl.addClass("janitor-ribbon-class");
+	}
 
-    public removeIcon(){
-        if(this.ribbonIconEl){
-            this.ribbonIconEl.remove();
-        }
-    }
+	public removeIcon() {
+		if (this.ribbonIconEl) {
+			this.ribbonIconEl.remove();
+		}
+	}
 
 	async loadSettings() {
 		this.settings = Object.assign(
