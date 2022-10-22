@@ -21,8 +21,10 @@ export default class JanitorPlugin extends Plugin {
 	settings: JanitorSettings;
 	statusBarItemEl: HTMLElement;
 	ribbonIconEl: HTMLElement;
+	initialScanDone = false;
 
 	async onload() {
+		this.initialScanDone = false;
 		await this.loadSettings();
 
 		if (this.settings.addRibbonIcon) {
@@ -100,7 +102,8 @@ export default class JanitorPlugin extends Plugin {
 		// })
 
 		this.app.metadataCache.on("resolved", () => {
-			if (this.settings.runAtStartup) {
+			if (this.settings.runAtStartup && !this.initialScanDone) {
+				this.initialScanDone = true;
 				this.scanFiles();
 			}
 		});
