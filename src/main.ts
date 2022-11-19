@@ -180,6 +180,7 @@ export default class JanitorPlugin extends Plugin {
 	}
 
 	private async scanFiles(forcePrompt = false, noPrompt = false) {
+		new Notice("Janitor is scanning vault");
 		this.updateStatusBar("Janitor Scanning...");
 		let modal;
 		const results = await new FileScanner(this.app, this.settings).scan();
