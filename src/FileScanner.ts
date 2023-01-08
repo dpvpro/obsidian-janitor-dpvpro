@@ -1,5 +1,6 @@
 import { JanitorSettings } from './JanitorSettings';
-import { App, FrontMatterCache, TFile } from 'obsidian';
+import { App, FrontMatterCache, normalizePath, TFile } from 'obsidian';
+import { CanvasData, CanvasTextData } from "obsidian/canvas"
 import { asyncFilter, partition } from './Utils';
 import { moment } from "obsidian";
 export interface ScanResults {
@@ -28,9 +29,13 @@ export class FileScanner {
 	}
 
 	isNote(file: TFile): boolean {
-		return file.extension.toLowerCase() === "md";
+		return file.extension.toLowerCase() === "md" || 
+		file.extension.toLowerCase() === "canvas" ;
 	}
 
+	isCanvas(file: TFile): boolean {
+		return file.extension.toLowerCase() === "canvas" ;
+	}
 	async scan() {
 		const allFiles = this.app.vault.getFiles();
 		let exclusionFilters = this.settings.excludedFilesFilters || [];
@@ -48,13 +53,13 @@ export class FileScanner {
 
 		const [notes, others] = partition(files, this.isNote);
 		const frontMatters = this.getFrontMatters(notes);
-		const orphans = this.settings.processOrphans && this.findOrphans(notes, others, frontMatters) ;
+		const orphans = this.settings.processOrphans && await this.findOrphans(notes, others, frontMatters) ;
 		const empty = this.settings.processEmpty && await this.findEmpty(files) ;
 		const expired = this.settings.processExpired && this.findExpired(frontMatters) ;
 		const big = this.settings.processBig && this.findBigFiles(files) ;
 
 		const results = {
-			orphans,
+			orphans, 
 			empty,
 			expired,
 			big,
@@ -72,9 +77,9 @@ export class FileScanner {
 		const now = moment.now();
 		const expired = frontMatters.filter(fm => {
 			const expires = fm.frontMatter[this.settings.expiredAttribute] as string | undefined;
-			if (expires) {
+			if (expires) { 
 				//https://day.js.org/docs/en/parse/string-format
-				const maybeDate = moment(expires, this.settings.expiredDateFormat);
+				const maybeDate = moment(expires, this.settings.expiredDateFormat); 
 				if (maybeDate.isValid() && maybeDate.isBefore(now)) {
 					return true;
 				}
@@ -97,16 +102,80 @@ export class FileScanner {
 		return empty;
 	}
 
-	private findOrphans(notes: TFile[], others: TFile[], frontMatters: IFrontMatter[]) {
+	private async findOrphans(notes: TFile[], others: TFile[], frontMatters: IFrontMatter[]) {
 		const resolvedLinks: { [key: string]: number; } = this.getResolvedLinks();
 
-		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters, resolvedLinks);
+		const canvasResources = await this.getCanvasResources(notes.filter(this.isCanvas));
+
+		console.log(canvasResources);
+
+		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters, 
+			// resolvedLinks
+			{...resolvedLinks, ...canvasResources}
+			);
+
+
 
 		// now resolvedLinksAndResolvedProps contains all resolved resources:
 		// "others" that we collected and are not here are eligible to be purged
 		const orphans = this.getOrphans(others, resolvedResources);
 		return orphans;
 	}
+
+	async getCanvasResources(canvases: TFile[]) {
+		
+		const datas = await Promise.all(canvases.map(async file=>{
+			const content = await this.app.vault.cachedRead(file);
+			const data = JSON.parse(content) as CanvasData
+
+			return data;
+		}))
+
+		const regex = /\[\[(.*)\]\]/gm;
+
+		const resources = datas.reduce((acc:{ [key: string]: number; }, data:CanvasData)=>{
+			data.nodes.forEach(node => {
+				let m;
+				const textNode = node as CanvasTextData 
+				switch (node.type) {
+					case "file":
+						acc[node.file] = (acc[node.file] || 0) + 1;
+						break;
+					case "link":
+						break;
+					case "text":
+						m = null;
+						while ((m = regex.exec(textNode.text)) !== null) {
+							// This is necessary to avoid infinite loops with zero-width matches
+							if (m.index === regex.lastIndex) {
+								regex.lastIndex++;
+							}
+							const res = m[1];
+							
+							// app.vault.config.attachmentFolderPath
+
+							if(res){
+
+								acc[res] = (acc[res] || 0) + 1;
+								//@ts-ignore
+								const attPath = normalizePath(`${app.vault.config.attachmentFolderPath}/${res}`)
+								acc[attPath] = (acc[attPath] || 0) + 1;
+							}
+						}
+						break;
+				}
+			})
+
+			return acc;
+		},{})
+
+		// const res = canvases.reduce((acc:{ [key: string]: number; }, file: TFile)=>{
+		// 	// TODO: asynch?
+		// },{})
+		return resources;
+	
+	}
+
 
 	private getOrphans(others: TFile[], resolvedLinksAndResolvedProps: { [key: string]: number; }) {
 		return others.filter(file => {

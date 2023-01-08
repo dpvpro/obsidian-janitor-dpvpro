@@ -12,7 +12,7 @@
 		"importHelpers": true,
 		"isolatedModules": true,
 		"strictNullChecks": true,
-		"esModuleInterop": true,
+		// "esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
 		"lib": [
 			"DOM",
