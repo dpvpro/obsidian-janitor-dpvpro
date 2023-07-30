@@ -107,7 +107,6 @@ export class FileScanner {
 
 		const canvasResources = await this.getCanvasResources(notes.filter(this.isCanvas));
 
-		console.log(canvasResources);
 
 		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters, 
 			// resolvedLinks
