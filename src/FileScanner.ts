@@ -58,7 +58,7 @@ export class FileScanner {
 		const empty = this.settings.processEmpty && await this.findEmpty(files) ;
 		const expired = this.settings.processExpired && this.findExpired(frontMatters) ;
 		const big = this.settings.processBig && this.findBigFiles(files) ;
-		const emptyFolders = this.settings.processEmptyFolders && this.findEmptyFolders() ;
+		const emptyFolders = this.settings.processEmptyDirectory && this.findEmptyFolders() ;
 
 		const results = {
 			orphans, 

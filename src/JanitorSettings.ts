@@ -20,7 +20,7 @@ export interface JanitorSettings {
 	processEmpty: boolean;
 	processExpired: boolean;
 	processBig: boolean;
-	processEmptyFolders: boolean;
+	processEmptyDirectory: boolean;
 	honorObsidianExcludedFiles: boolean;
 	excludedFilesFilters: string[];
 }
@@ -40,7 +40,7 @@ export const DEFAULT_SETTINGS: JanitorSettings = {
 	processEmpty: true,
 	processExpired: true,
 	processBig: true,
-	processEmptyFolders: true,
+	processEmptyDirectory: true,
 	honorObsidianExcludedFiles: true,
 	excludedFilesFilters: []
 }
