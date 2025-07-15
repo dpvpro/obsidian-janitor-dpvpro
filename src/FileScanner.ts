@@ -30,7 +30,7 @@ export class FileScanner {
 	}
 
 	isNote(file: TFile): boolean {
-		return file.extension.toLowerCase() === "md" || 
+		return file.extension.toLowerCase() === "md" ||
 		file.extension.toLowerCase() === "canvas" ;
 	}
 
@@ -45,9 +45,9 @@ export class FileScanner {
 			//@ts-ignore
 			exclusionFilters = exclusionFilters.concat(this.app.vault.config.userIgnoreFilters)
 		}
-		
+
 		const regexes = exclusionFilters.map<RegExp>((filter:string) => new RegExp(filter,"i"));
-		
+
 		const files = allFiles.filter(file=>{
 			return !regexes.some(re=>re.exec(file.path));
 		});
@@ -58,10 +58,10 @@ export class FileScanner {
 		const empty = this.settings.processEmpty && await this.findEmpty(files) ;
 		const expired = this.settings.processExpired && this.findExpired(frontMatters) ;
 		const big = this.settings.processBig && this.findBigFiles(files) ;
-		const emptyFolders = this.settings.processEmptyDirectory && this.findEmptyFolders() ;
+		const emptyFolders = this.settings.processEmptyDirectories && this.findEmptyFolders() ;
 
 		const results = {
-			orphans, 
+			orphans,
 			empty,
 			expired,
 			big,
@@ -79,27 +79,27 @@ export class FileScanner {
 	private findEmptyFolders(): string[] {
 		const allFolders = this.app.vault.getAllLoadedFiles()
 			.filter(file => file instanceof TFolder) as TFolder[];
-		
+
 		const emptyFolders: string[] = [];
-		
+
 		// Check each folder to see if it's empty (recursively)
 		for (const folder of allFolders) {
 			if (this.isFolderEmpty(folder)) {
 				emptyFolders.push(folder.path);
 			}
 		}
-		
+
 		return emptyFolders;
 	}
 
 	private isFolderEmpty(folder: TFolder): boolean {
 		// A folder is considered empty if it has no files and no non-empty subfolders
 		const children = folder.children;
-		
+
 		if (children.length === 0) {
 			return true;
 		}
-		
+
 		// Check if all children are empty folders
 		for (const child of children) {
 			if (child instanceof TFile) {
@@ -110,7 +110,7 @@ export class FileScanner {
 				}
 			}
 		}
-		
+
 		return true; // All children are empty folders or no children
 	}
 
@@ -118,9 +118,9 @@ export class FileScanner {
 		const now = moment.now();
 		const expired = frontMatters.filter(fm => {
 			const expires = fm.frontMatter[this.settings.expiredAttribute] as string | undefined;
-			if (expires) { 
+			if (expires) {
 				//https://day.js.org/docs/en/parse/string-format
-				const maybeDate = moment(expires, this.settings.expiredDateFormat); 
+				const maybeDate = moment(expires, this.settings.expiredDateFormat);
 				if (maybeDate.isValid() && maybeDate.isBefore(now)) {
 					return true;
 				}
@@ -149,7 +149,7 @@ export class FileScanner {
 		const canvasResources = await this.getCanvasResources(notes.filter(this.isCanvas));
 
 
-		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters, 
+		const resolvedResources = this.combineLinksAndResolvedMetadata(frontMatters,
 			// resolvedLinks
 			{...resolvedLinks, ...canvasResources}
 			);
@@ -163,7 +163,7 @@ export class FileScanner {
 	}
 
 	async getCanvasResources(canvases: TFile[]) {
-		
+
 		const datas = await Promise.all(canvases.map(async file=>{
 			const content = await this.app.vault.cachedRead(file);
 			const data = JSON.parse(content) as CanvasData
@@ -176,7 +176,7 @@ export class FileScanner {
 		const resources = datas.reduce((acc:{ [key: string]: number; }, data:CanvasData)=>{
 			data.nodes.forEach(node => {
 				let m;
-				const textNode = node as CanvasTextData 
+				const textNode = node as CanvasTextData
 				switch (node.type) {
 					case "file":
 						acc[node.file] = (acc[node.file] || 0) + 1;
@@ -191,7 +191,7 @@ export class FileScanner {
 								regex.lastIndex++;
 							}
 							const res = m[1];
-							
+
 							// app.vault.config.attachmentFolderPath
 
 							if(res){
@@ -213,7 +213,7 @@ export class FileScanner {
 		// 	// TODO: asynch?
 		// },{})
 		return resources;
-	
+
 	}
 
 
@@ -275,4 +275,3 @@ export class FileScanner {
 function extractStringProperties(fm: any): string[] {
 	return Object.values(fm).filter((o: any) => typeof o === 'string') as string[];
 }
-

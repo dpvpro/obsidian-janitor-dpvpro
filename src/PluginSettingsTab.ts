@@ -73,9 +73,15 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 		);
 		this.createToggle(
 			containerEl,
-			"Process empty",
+			"Process empty files",
 			"Remove empty files or files with only whitespace",
 			"processEmpty"
+		);
+		this.createToggle(
+			containerEl,
+			"Process empty directories",
+			"Remove empty directories from the vault",
+			"processEmptyDirectories"
 		);
 		this.createToggle(
 			containerEl,
@@ -111,13 +117,6 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			"Process expired",
 			"Remove notes that have expired",
 			"processExpired"
-		);
-
-		this.createToggle(
-			containerEl,
-			"Process empty directory",
-			"Remove empty directory from the vault",
-			"processEmptyDirectory"
 		);
 
 		if (this.plugin.settings.processExpired) {
