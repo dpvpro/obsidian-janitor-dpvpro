@@ -12,6 +12,7 @@ export interface JanitorViewProps {
 	empty: SelectableItem[] | false,
 	big: SelectableItem[] | false,
 	expired: SelectableItem[] | false,
+	emptyFolders: SelectableItem[] | false,
 	onClose: ()=>void,
 	onSelectionChange: (i:number,section:string)=>void,
 	onOpen: (i:number,section:string)=>void,
@@ -28,7 +29,7 @@ export const JanitorView = (props: JanitorViewProps) => {
 	// 	orphans: 0
 	// });
 	const { scanning, onClose, onPerform } = props;
-	const somethingSelected = [props.orphans, props.empty, props.expired, props.big]
+	const somethingSelected = [props.orphans, props.empty, props.expired, props.big, props.emptyFolders]
 	.some(files => files && files.some(item=>item.selected))
 	
 
@@ -71,11 +72,12 @@ export const JanitorView = (props: JanitorViewProps) => {
 		</div>
 	)
 };
-function ScanResults({ orphans,empty,big,expired, onSelectionChange, onOpen }: 
+function ScanResults({ orphans,empty,big,expired,emptyFolders, onSelectionChange, onOpen }: 
 	{ orphans: SelectableItem[] | false, 
 		empty: SelectableItem[] | false,
 		big: SelectableItem[] | false,
 		expired: SelectableItem[] | false,
+		emptyFolders: SelectableItem[] | false,
 		onSelectionChange:(i:number,section:string)=>void,
 		onOpen:(i:number,section:string)=>void
 	}) {
@@ -104,6 +106,7 @@ function ScanResults({ orphans,empty,big,expired, onSelectionChange, onOpen }:
 			{empty && empty.length>0 &&  <FileList title="Empty" files={empty} onChange={handleSelectionChange("empty")}  onOpen={handleOpen("empty")} />}
 			{expired && expired.length>0 && <FileList title="Expired" files={expired} onChange={handleSelectionChange("expired")}  onOpen={handleOpen("expired")} />}
 			{big && big.length>0 && <FileList title="Big" files={big} onChange={handleSelectionChange("big")}  onOpen={handleOpen("big")} />}
+			{emptyFolders && emptyFolders.length>0 && <FileList title="Empty Folders" files={emptyFolders} onChange={handleSelectionChange("emptyFolders")} onOpen={handleOpen("emptyFolders")} />}
 			{/* </fieldset> */}
 		</div>
 

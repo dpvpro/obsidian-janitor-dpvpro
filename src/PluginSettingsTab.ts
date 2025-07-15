@@ -113,6 +113,13 @@ export default class JanitorSettingsTab extends PluginSettingTab {
 			"processExpired"
 		);
 
+		this.createToggle(
+			containerEl,
+			"Process Empty Folders",
+			"Remove empty folders from the vault",
+			"processEmptyFolders"
+		);
+
 		if (this.plugin.settings.processExpired) {
 			containerEl.createEl("h3", { text: "Expiration Processing" });
 

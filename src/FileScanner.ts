@@ -1,5 +1,5 @@
 import { JanitorSettings } from './JanitorSettings';
-import { App, FrontMatterCache, normalizePath, TFile } from 'obsidian';
+import { App, FrontMatterCache, normalizePath, TFile, TFolder } from 'obsidian';
 import { CanvasData, CanvasTextData } from "obsidian/canvas"
 import { asyncFilter, partition } from './Utils';
 import { moment } from "obsidian";
@@ -8,7 +8,8 @@ export interface ScanResults {
 	orphans: TFile[],
 	empty: TFile[],
 	expired: TFile[],
-	big: TFile[]
+	big: TFile[],
+	emptyFolders: string[]
 }
 
 interface IFrontMatter {
@@ -57,12 +58,14 @@ export class FileScanner {
 		const empty = this.settings.processEmpty && await this.findEmpty(files) ;
 		const expired = this.settings.processExpired && this.findExpired(frontMatters) ;
 		const big = this.settings.processBig && this.findBigFiles(files) ;
+		const emptyFolders = this.settings.processEmptyFolders && this.findEmptyFolders() ;
 
 		const results = {
 			orphans, 
 			empty,
 			expired,
 			big,
+			emptyFolders,
 			scanning: false
 		} as ScanResults;
 
@@ -71,6 +74,44 @@ export class FileScanner {
 
 	private findBigFiles(files: TFile[]) {
 		return files.filter(file => (file.stat.size >> 10) > this.settings.sizeLimitKb);
+	}
+
+	private findEmptyFolders(): string[] {
+		const allFolders = this.app.vault.getAllLoadedFiles()
+			.filter(file => file instanceof TFolder) as TFolder[];
+		
+		const emptyFolders: string[] = [];
+		
+		// Check each folder to see if it's empty (recursively)
+		for (const folder of allFolders) {
+			if (this.isFolderEmpty(folder)) {
+				emptyFolders.push(folder.path);
+			}
+		}
+		
+		return emptyFolders;
+	}
+
+	private isFolderEmpty(folder: TFolder): boolean {
+		// A folder is considered empty if it has no files and no non-empty subfolders
+		const children = folder.children;
+		
+		if (children.length === 0) {
+			return true;
+		}
+		
+		// Check if all children are empty folders
+		for (const child of children) {
+			if (child instanceof TFile) {
+				return false; // Found a file, folder is not empty
+			} else if (child instanceof TFolder) {
+				if (!this.isFolderEmpty(child)) {
+					return false; // Found a non-empty subfolder
+				}
+			}
+		}
+		
+		return true; // All children are empty folders or no children
 	}
 
 	private findExpired(frontMatters: IFrontMatter[]) {
@@ -157,7 +198,7 @@ export class FileScanner {
 
 								acc[res] = (acc[res] || 0) + 1;
 								//@ts-ignore
-								const attPath = normalizePath(`${app.vault.config.attachmentFolderPath}/${res}`)
+								const attPath = normalizePath(`${this.app.vault.config.attachmentFolderPath}/${res}`)
 								acc[attPath] = (acc[attPath] || 0) + 1;
 							}
 						}
@@ -200,13 +241,13 @@ export class FileScanner {
 
 	private getFrontMatters(notes: TFile[]) {
 		return notes.map(file => {
-			const frontMatter = app.metadataCache.getFileCache(file)?.frontmatter;
+			const frontMatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
 			if (frontMatter) {
 				const stringProps: string[] = extractStringProperties(frontMatter);
 				if (stringProps?.length) {
 					// we should distinguish files from other props maybe...
 					const resolvedProps: string[] = stringProps.map(sp => {
-						const resolvedFile = app.metadataCache.getFirstLinkpathDest(sp, file.path);
+						const resolvedFile = this.app.metadataCache.getFirstLinkpathDest(sp, file.path);
 						if (resolvedFile)
 							return resolvedFile.path;
 					}).filter(sp => !!sp) as string[];
@@ -222,9 +263,9 @@ export class FileScanner {
 	}
 
 	private getResolvedLinks() {
-		const resolvedLinks: { [key: string]: number; } = Object.keys(app.metadataCache.resolvedLinks).
+		const resolvedLinks: { [key: string]: number; } = Object.keys(this.app.metadataCache.resolvedLinks).
 			reduce((rl: { [key: string]: number; }, fileName: string) => {
-				return Object.assign(rl, app.metadataCache.resolvedLinks[fileName]);
+				return Object.assign(rl, this.app.metadataCache.resolvedLinks[fileName]);
 
 			}, {});
 		return resolvedLinks;
@@ -232,6 +273,6 @@ export class FileScanner {
 }
 
 function extractStringProperties(fm: any): string[] {
-	return Object.values<string>(fm).filter(o => typeof o === 'string');
+	return Object.values(fm).filter((o: any) => typeof o === 'string') as string[];
 }
 
