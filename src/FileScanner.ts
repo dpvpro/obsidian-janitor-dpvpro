@@ -9,7 +9,7 @@ export interface ScanResults {
 	empty: TFile[],
 	expired: TFile[],
 	big: TFile[],
-	emptyFolders: string[]
+	emptyDirectories: string[]
 }
 
 interface IFrontMatter {
@@ -58,14 +58,14 @@ export class FileScanner {
 		const empty = this.settings.processEmpty && await this.findEmpty(files) ;
 		const expired = this.settings.processExpired && this.findExpired(frontMatters) ;
 		const big = this.settings.processBig && this.findBigFiles(files) ;
-		const emptyFolders = this.settings.processEmptyDirectories && this.findEmptyFolders() ;
+		const emptyDirectories = this.settings.processEmptyDirectories && this.findEmptyDirectories() ;
 
 		const results = {
 			orphans,
 			empty,
 			expired,
 			big,
-			emptyFolders,
+			emptyDirectories: emptyDirectories,
 			scanning: false
 		} as ScanResults;
 
@@ -76,42 +76,42 @@ export class FileScanner {
 		return files.filter(file => (file.stat.size >> 10) > this.settings.sizeLimitKb);
 	}
 
-	private findEmptyFolders(): string[] {
-		const allFolders = this.app.vault.getAllLoadedFiles()
+	private findEmptyDirectories(): string[] {
+		const allDirectories = this.app.vault.getAllLoadedFiles()
 			.filter(file => file instanceof TFolder) as TFolder[];
 
-		const emptyFolders: string[] = [];
+		const emptyDirectories: string[] = [];
 
-		// Check each folder to see if it's empty (recursively)
-		for (const folder of allFolders) {
-			if (this.isFolderEmpty(folder)) {
-				emptyFolders.push(folder.path);
+		// Check each directory to see if it's empty (recursively)
+		for (const directory of allDirectories) {
+			if (this.isDirectoryEmpty(directory)) {
+				emptyDirectories.push(directory.path);
 			}
 		}
 
-		return emptyFolders;
+		return emptyDirectories;
 	}
 
-	private isFolderEmpty(folder: TFolder): boolean {
-		// A folder is considered empty if it has no files and no non-empty subfolders
-		const children = folder.children;
+	private isDirectoryEmpty(directory: TFolder): boolean {
+		// A directory is considered empty if it has no files and no non-empty subdirectories
+		const children = directory.children;
 
 		if (children.length === 0) {
 			return true;
 		}
 
-		// Check if all children are empty folders
+		// Check if all children are empty directories
 		for (const child of children) {
 			if (child instanceof TFile) {
 				return false; // Found a file, folder is not empty
 			} else if (child instanceof TFolder) {
-				if (!this.isFolderEmpty(child)) {
-					return false; // Found a non-empty subfolder
+				if (!this.isDirectoryEmpty(child)) {
+					return false; // Found a non-empty subdirectory
 				}
 			}
 		}
 
-		return true; // All children are empty folders or no children
+		return true; // All children are empty directories or no children
 	}
 
 	private findExpired(frontMatters: IFrontMatter[]) {
@@ -191,8 +191,6 @@ export class FileScanner {
 								regex.lastIndex++;
 							}
 							const res = m[1];
-
-							// app.vault.config.attachmentFolderPath
 
 							if(res){
 

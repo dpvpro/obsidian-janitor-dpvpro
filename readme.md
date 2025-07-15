@@ -10,9 +10,9 @@ These are media or attachments that are not referenced anywhere. Janitor looks a
 
 These are files either empty or consisting only of whitespace (newlines, tabs, and so on)
 
-## Empty folders
+## Empty directories
 
-Janitor can identify and remove empty folders from your vault. A folder is considered empty if it contains no files and only contains other empty folders (or no subfolders at all). This helps keep your vault structure clean by removing unnecessary empty directories.
+Janitor can identify and remove empty directories from your vault. A directory is considered empty if it contains no files and only contains other empty directories (or no subdirectories at all). This helps keep your vault structure clean by removing unnecessary empty directories.
 
 ## Big files
 

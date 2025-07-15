@@ -12,7 +12,7 @@ export interface JanitorViewProps {
 	empty: SelectableItem[] | false,
 	big: SelectableItem[] | false,
 	expired: SelectableItem[] | false,
-	emptyFolders: SelectableItem[] | false,
+	emptyDirectories: SelectableItem[] | false,
 	onClose: ()=>void,
 	onSelectionChange: (i:number,section:string)=>void,
 	onOpen: (i:number,section:string)=>void,
@@ -29,9 +29,9 @@ export const JanitorView = (props: JanitorViewProps) => {
 	// 	orphans: 0
 	// });
 	const { scanning, onClose, onPerform } = props;
-	const somethingSelected = [props.orphans, props.empty, props.expired, props.big, props.emptyFolders]
+	const somethingSelected = [props.orphans, props.empty, props.expired, props.big, props.emptyDirectories]
 	.some(files => files && files.some(item=>item.selected))
-	
+
 
 
 	const handlePerform = useCallback((operation:OperationType)=>useCallback(()=>{
@@ -67,26 +67,26 @@ export const JanitorView = (props: JanitorViewProps) => {
 					<button tabIndex={1} style={{visibility: somethingSelected ? 'visible' : 'hidden' }} className="" onClick={handles[OperationType.TrashSystem]} title="Put files in the OS' trash">Trash (System)</button>
 					<button tabIndex={1} style={{visibility: somethingSelected ? 'visible' : 'hidden' }} className="" onClick={handles[OperationType.Delete]} title="Permanently delete files">Delete</button>
 					<button tabIndex={1} className="mod-cta" onClick={onClose}>Cancel</button>
-				</div>	
+				</div>
 			</div>
 		</div>
 	)
 };
-function ScanResults({ orphans,empty,big,expired,emptyFolders, onSelectionChange, onOpen }: 
-	{ orphans: SelectableItem[] | false, 
+function ScanResults({ orphans,empty,big,expired,emptyDirectories, onSelectionChange, onOpen }:
+	{ orphans: SelectableItem[] | false,
 		empty: SelectableItem[] | false,
 		big: SelectableItem[] | false,
 		expired: SelectableItem[] | false,
-		emptyFolders: SelectableItem[] | false,
+		emptyDirectories: SelectableItem[] | false,
 		onSelectionChange:(i:number,section:string)=>void,
 		onOpen:(i:number,section:string)=>void
 	}) {
-	
+
 	const handleSelectionChange =
 		useCallback((section:string)=>
 			useCallback((i:number)=>{
 				onSelectionChange(i,section);
-			},[onSelectionChange,section])	
+			},[onSelectionChange,section])
 		,[onSelectionChange ])
 
 	;
@@ -95,7 +95,7 @@ function ScanResults({ orphans,empty,big,expired,emptyFolders, onSelectionChange
 		useCallback((section:string)=>
 			useCallback((i:number)=>{
 				onOpen(i,section);
-			},[onOpen,section])	
+			},[onOpen,section])
 		,[onOpen ])
 
 	;
@@ -106,7 +106,7 @@ function ScanResults({ orphans,empty,big,expired,emptyFolders, onSelectionChange
 			{empty && empty.length>0 &&  <FileList title="Empty" files={empty} onChange={handleSelectionChange("empty")}  onOpen={handleOpen("empty")} />}
 			{expired && expired.length>0 && <FileList title="Expired" files={expired} onChange={handleSelectionChange("expired")}  onOpen={handleOpen("expired")} />}
 			{big && big.length>0 && <FileList title="Big" files={big} onChange={handleSelectionChange("big")}  onOpen={handleOpen("big")} />}
-			{emptyFolders && emptyFolders.length>0 && <FileList title="Empty Folders" files={emptyFolders} onChange={handleSelectionChange("emptyFolders")} onOpen={handleOpen("emptyFolders")} />}
+			{emptyDirectories && emptyDirectories.length>0 && <FileList title="Empty Folders" files={emptyDirectories} onChange={handleSelectionChange("emptyDirectories")} onOpen={handleOpen("emptyDirectories")} />}
 			{/* </fieldset> */}
 		</div>
 
@@ -114,7 +114,7 @@ function ScanResults({ orphans,empty,big,expired,emptyFolders, onSelectionChange
 
 }
 
-const FileList = ({files, onChange, onOpen, title}:{files:SelectableItem[], 
+const FileList = ({files, onChange, onOpen, title}:{files:SelectableItem[],
 	onChange:(i:number)=>void,
 	onOpen:(i:number)=>void,
 	title: string}
@@ -142,19 +142,19 @@ const FileList = ({files, onChange, onOpen, title}:{files:SelectableItem[],
 		<div className="janitor-scan-section-title">
 			<label title={`Click to ${allSelected?"unselect":"select"} these ${files.length} items`}>
 			<input type="checkbox" checked={allSelected} onChange={handleOnChange(-1)} />
-			{title} ({files.length} items) 
+			{title} ({files.length} items)
 			{(numSelected > 0) && <>&nbsp; ({numSelected} selected)</>}
 			</label>
-			
+
 		</div>
-			
+
 		{
 			files.map((file,i)=>(
 				<div key={i} className="janitor-file">
 					<label>
-					<input 
+					<input
 						checked={file.selected}
-						value={file.name} 
+						value={file.name}
 						onChange={handleOnChange(i)}
 						type="checkbox" />
 					<span>{file.name}</span>

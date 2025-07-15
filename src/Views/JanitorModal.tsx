@@ -28,7 +28,7 @@ export class JanitorModal extends Modal {
 			empty: [],
 			big: [],
 			expired: [],
-			emptyFolders: [],
+			emptyDirectories: [],
 			onSelectionChange: (i: number, section: string) => {
 				this.handleSelectionChange(i, section);
 			},
@@ -46,10 +46,10 @@ export class JanitorModal extends Modal {
 	}
 	perform(operation:OperationType) {
 		const files = this.extractFiles();
-		const folders = this.extractFolders();
+		const folders = this.extractDirectories();
 		this.plugin.perform(operation, files);
 		if (folders.length > 0) {
-			this.plugin.performOnFolders(operation, folders);
+			this.plugin.performOnDirectories(operation, folders);
 		}
 		this.close();
 	}
@@ -100,7 +100,7 @@ export class JanitorModal extends Modal {
 			empty:  this.state.empty && changeSelection(this.state.empty , names, value),
 			big:  this.state.big && changeSelection(this.state.big, names, value),
 			expired: this.state.expired && changeSelection(this.state.expired, names, value),
-			emptyFolders: this.state.emptyFolders && changeSelection(this.state.emptyFolders, names, value),
+			emptyDirectories: this.state.emptyDirectories && changeSelection(this.state.emptyDirectories, names, value),
 		}
 	}
 
@@ -112,7 +112,7 @@ export class JanitorModal extends Modal {
 			empty: this.fileToSelectableItem(results.empty),
 			expired: this.fileToSelectableItem(results.expired),
 			big: this.fileToSelectableItem(results.big),
-			emptyFolders: this.folderToSelectableItem(results.emptyFolders)
+			emptyDirectories: this.folderToSelectableItem(results.emptyDirectories)
 		};
 
 		this.render();
@@ -163,9 +163,9 @@ export class JanitorModal extends Modal {
 
 	}
 
-	extractFolders() {
-		return this.state.emptyFolders 
-			? this.state.emptyFolders.filter(f => f.selected).map(f => f.name)
+	extractDirectories() {
+		return this.state.emptyDirectories 
+			? this.state.emptyDirectories.filter(f => f.selected).map(f => f.name)
 			: []
 	}
 }

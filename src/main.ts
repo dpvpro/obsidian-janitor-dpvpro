@@ -191,7 +191,7 @@ export default class JanitorPlugin extends Plugin {
 			(results.empty && results.empty.length) ||
 			(results.expired && results.expired.length) ||
 			(results.big && results.big.length) ||
-			(results.emptyFolders && results.emptyFolders.length);
+			(results.emptyDirectories && results.emptyDirectories.length);
 		this.updateStatusBar("");
 		if (!foundSomething) {
 			new Notice(`Janitor scanned and found nothing to cleanup`);
@@ -222,12 +222,12 @@ export default class JanitorPlugin extends Plugin {
 			].flatMap((list) => (list ? list.map((file) => file.path) : []));
 			files = [...new Set(files)];
 			
-			// Handle empty folders separately
-			const folders = results.emptyFolders || [];
+			// Handle empty directories separately
+			const directories = results.emptyDirectories || [];
 			
 			await this.perform(this.settings.defaultOperation, files);
-			if (folders.length > 0) {
-				await this.performOnFolders(this.settings.defaultOperation, folders);
+			if (directories.length > 0) {
+				await this.performOnDirectories(this.settings.defaultOperation, directories);
 			}
 		}
 	}
@@ -243,9 +243,9 @@ export default class JanitorPlugin extends Plugin {
 		);
 	}
 
-	async performOnFolders(operation: OperationType, folders: string[]) {
+	async performOnDirectories(operation: OperationType, directories: string[]) {
 		const fileProcessor = new FileProcessor(this.app);
-		const processingResult = await fileProcessor.processFolders(folders, operation);
+		const processingResult = await fileProcessor.processDirectories(directories, operation);
 		new Notice(
 			`${processingResult.deletedFiles} folders deleted.` +
 				(processingResult.notDeletedFiles

@@ -49,42 +49,42 @@ export class FileProcessor {
 		return { deletedFiles, notDeletedFiles };
 	}
 
-	async processFolders(folderPaths: string[], operation = OperationType.Trash) {
+	async processDirectories(directoriesPaths: string[], operation = OperationType.Trash) {
 		// ensures that we don't try to delete the same folder twice
-		const uniq = [...new Set(folderPaths)];
-		let deletedFolders = 0;
-		let notDeletedFolders = 0;
+		const uniq = [...new Set(directoriesPaths)];
+		let deletedDirectories = 0;
+		let notDeletedDirectories = 0;
 
-		for (const folderPath of uniq) {
-			const folder = this.app.vault.getAbstractFileByPath(folderPath);
-			if (folder && folder instanceof TFolder) {
+		for (const directoryPath of uniq) {
+			const directory = this.app.vault.getAbstractFileByPath(directoryPath);
+			if (directory && directory instanceof TFolder) {
 				try {
 					switch (operation) {
 						case OperationType.TrashSystem:
-							await this.app.vault.trash(folder, true);
-							deletedFolders++;
+							await this.app.vault.trash(directory, true);
+							deletedDirectories++;
 							break;
 
 						case OperationType.Trash:
-							await this.app.vault.trash(folder, false);
-							deletedFolders++;
+							await this.app.vault.trash(directory, false);
+							deletedDirectories++;
 							break;
 						case OperationType.Delete:
-							await this.app.vault.delete(folder);
-							deletedFolders++;
+							await this.app.vault.delete(directory);
+							deletedDirectories++;
 							break;
 						default:
 							console.warn(`Warning: operation ${operation} unknown`);
 							break;
 					}
 				} catch {
-					notDeletedFolders++;
+					notDeletedDirectories++;
 				}
 			} else {
-				console.warn(`Warning: folder ${folderPath} was not found for deletion!`);
-				notDeletedFolders++;
+				console.warn(`Warning: folder ${directoryPath} was not found for deletion!`);
+				notDeletedDirectories++;
 			}
 		}
-		return { deletedFiles: deletedFolders, notDeletedFiles: notDeletedFolders };
+		return { deletedFiles: deletedDirectories, notDeletedFiles: notDeletedDirectories };
 	}
 }
